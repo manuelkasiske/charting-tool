@@ -1,0 +1,31 @@
+# Secrets -- never commit these.
+.env
+.env-*
+*.key
+*.pem
+
+# Local data. The SQLite store lives on a bind mount outside the repo, but
+# guard against a stray DATA_DIR pointed inside it.
+data/
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# Editor backups made before manual edits.
+*.bak
+*.bak[0-9]
+*.bak-*
+*.bak[0-9]-*
+
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Documentation of the live installation -- stays on the server. It names
+# host paths, the fail2ban thresholds and findings from a security audit of
+# the running site, none of which belongs in a public repository.
+DOKUMENTATION-TECHNIK.md
+DOKUMENTATION-SICHERHEIT.md
+docs/
+info.txt

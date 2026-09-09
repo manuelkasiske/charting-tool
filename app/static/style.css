@@ -1,0 +1,568 @@
+/* Colour roles rather than raw hex values -- so that the light/dark switch
+   happens in exactly one place. The series colours come from a checked
+   categorical palette (CVD distance >= 8 in both modes); the dark values are
+   shades of their own for the dark surface, not an inversion of the light
+   ones. */
+:root {
+  color-scheme: light;
+  --surface:        #fcfcfb;
+  --surface-2:      #f3f2ef;
+  --surface-3:      #e7e5e0;
+  --border:         #d9d7d1;
+  --text:           #0b0b0b;
+  --text-2:         #52514e;
+  --text-muted:     #7a7873;
+
+  --series-1: #2a78d6;  /* close              */
+  --series-2: #eb6834;  /* SMA 50             */
+  --series-3: #1baf7a;  /* SMA 200            */
+  --series-4: #eda100;  /* EMA 50             */
+  --series-5: #e87ba4;  /* EMA 200            */
+  --series-7: #4a3aa7;  /* VIX                */
+
+  --up:       #0ca30c;
+  --down:     #d03b3b;
+  --grid:     #e7e5e0;
+  --band:     rgba(42,120,214,.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface:    #1a1a19;
+    --surface-2:  #232322;
+    --surface-3:  #2f2f2d;
+    --border:     #3a3a37;
+    --text:       #ffffff;
+    --text-2:     #c3c2b7;
+    --text-muted: #96958c;
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-7: #9085e9;
+
+    --up:   #0ca30c;
+    --down: #d03b3b;
+    --grid: #2f2f2d;
+    --band: rgba(57,135,229,.14);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface:    #1a1a19;
+  --surface-2:  #232322;
+  --surface-3:  #2f2f2d;
+  --border:     #3a3a37;
+  --text:       #ffffff;
+  --text-2:     #c3c2b7;
+  --text-muted: #96958c;
+
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-7: #9085e9;
+
+  --up:   #0ca30c;
+  --down: #d03b3b;
+  --grid: #2f2f2d;
+  --band: rgba(57,135,229,.14);
+}
+
+* { box-sizing: border-box; }
+
+/* Has to carry !important: a display rule of our own (display:flex on
+   .tt-row, say) would otherwise beat the browser's default for [hidden], and
+   an element hidden by JavaScript would stay visible -- with no error, just
+   with empty content. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--text);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+button:hover  { background: var(--surface-3); }
+button.active { background: var(--series-1); border-color: var(--series-1); color: #fff; }
+button.ghost  { background: transparent; }
+/* Has to stand after .ghost: otherwise its transparent background wins at
+   equal specificity, and the white text of the active button would sit on a
+   light ground. */
+button.ghost.active {
+  background: var(--series-1); border-color: var(--series-1); color: #fff;
+}
+
+input[type="text"], input[type="password"] {
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
+input:focus-visible, button:focus-visible {
+  outline: 2px solid var(--series-1);
+  outline-offset: 1px;
+}
+
+.muted { color: var(--text-muted); }
+
+/* --- Sign-in --- */
+.login-page {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  background: var(--surface-2);
+}
+.login-box {
+  width: min(360px, 92vw);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+}
+.login-box h1 { margin: 0; font-size: 20px; font-weight: 600; }
+.login-box h1 span { color: var(--text-muted); font-weight: 400; }
+.login-box .sub { margin: 4px 0 24px; color: var(--text-muted); font-size: 13px; }
+.login-box label { display: block; margin: 14px 0 5px; font-size: 13px; color: var(--text-2); }
+.login-box input[type="text"], .login-box input[type="password"] { width: 100%; }
+.login-box .check {
+  display: flex; align-items: center; gap: 8px;
+  margin: 18px 0 22px; font-size: 13px; color: var(--text-2);
+}
+.login-box button[type="submit"] {
+  width: 100%; padding: 10px;
+  background: var(--series-1); border-color: var(--series-1); color: #fff;
+}
+.error {
+  margin: 0 0 4px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--down) 14%, transparent);
+  border: 1px solid var(--down);
+  font-size: 13px;
+}
+
+/* --- Top bar --- */
+.topbar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  position: sticky; top: 0; z-index: 20;
+}
+.brand { font-weight: 600; white-space: nowrap; }
+
+/* Long and short label of the same button. The long one on wide screens, the
+   short one on narrow ones -- that way the tabs stay on one line without two
+   sets of buttons standing in the HTML. */
+.label-short { display: none; }
+#toggle-dates { display: none; }
+.brand span { color: var(--text-muted); font-weight: 400; }
+
+.search { position: relative; display: flex; gap: 6px; }
+.search input { width: 190px; text-transform: uppercase; }
+.suggestions {
+  position: absolute; top: 100%; left: 0; z-index: 30;
+  margin: 4px 0 0; padding: 4px; list-style: none;
+  width: 340px; max-height: 300px; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+.suggestions li { padding: 7px 10px; border-radius: 5px; cursor: pointer; }
+.suggestions li:hover { background: var(--surface-3); }
+.suggestions .sym { font-weight: 600; margin-right: 8px; }
+.suggestions .meta { color: var(--text-muted); font-size: 12px; }
+
+.ranges { display: flex; gap: 4px; }
+
+/* Freely chosen period. The fields are deliberately native date inputs --
+   they bring the calendar of the respective system with them, on the phone
+   therefore the familiar wheel. */
+.custom-range { display: flex; align-items: center; gap: 4px; }
+.custom-range input[type="date"] {
+  font: inherit;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  /* Without a fixed width the field becomes very wide in Safari. */
+  width: 140px;
+}
+.custom-range .dash { color: var(--text-muted); }
+.custom-range.active input[type="date"] { border-color: var(--series-1); }
+.custom-range.active #apply-range {
+  background: var(--series-1); border-color: var(--series-1); color: #fff;
+}
+
+/* For screen readers only, not visible. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.ranges button { padding: 6px 11px; }
+.logout { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.user { color: var(--text-muted); font-size: 13px; }
+
+/* Language switch. A link rather than a button (see index.html), so the button
+   rules do not reach it and it gets the same look here. Fixed width, so the
+   top bar does not jump when "DE" becomes "EN". */
+.lang-switch {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 12px; font-weight: 600; letter-spacing: .04em;
+  text-decoration: none;
+}
+.lang-switch:hover { background: var(--surface-3); }
+.lang-switch:focus-visible { outline: 2px solid var(--series-1); outline-offset: 1px; }
+
+/* On the sign-in page it stands on its own below the form. */
+.lang-line { margin: 18px 0 0; text-align: center; }
+
+.watchlist { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px 0; }
+.watchlist button { padding: 4px 10px; font-size: 13px; border-radius: 999px; }
+
+.status {
+  margin: 12px 16px; padding: 10px 14px;
+  border: 1px solid var(--border); border-left: 3px solid var(--series-2);
+  border-radius: 6px; background: var(--surface-2); font-size: 13px;
+}
+
+.quote { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 14px 16px 0; }
+.quote h2 { margin: 0; font-size: 22px; }
+.quote .last { font-size: 20px; font-variant-numeric: tabular-nums; }
+.quote .change { font-variant-numeric: tabular-nums; font-weight: 600; }
+.quote .change.up   { color: var(--up); }
+.quote .change.down { color: var(--down); }
+.badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 999px;
+  background: var(--surface-3); color: var(--text-2);
+}
+
+.tabbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px 0;
+}
+.tabs { display: flex; gap: 4px; }
+
+/* Order and visibility of the panels. Arrow buttons rather than dragging:
+   with seven rarely changed entries they are more robust, work on the phone
+   and work with the keyboard. */
+.panel-config {
+  margin: 10px 16px 0; padding: 12px 14px;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface-2);
+  max-width: 520px;
+}
+.panel-config h3 { margin: 0 0 4px; font-size: 14px; }
+.panel-config .hint { margin: 0 0 10px; }
+.panel-config ul { list-style: none; margin: 0 0 10px; padding: 0; }
+.panel-config li {
+  display: grid; grid-template-columns: auto 1fr auto auto;
+  align-items: center; gap: 8px;
+  padding: 5px 6px; border-radius: 6px;
+}
+.panel-config li:hover { background: var(--surface-3); }
+.panel-config li.off .panel-name { color: var(--text-muted); text-decoration: line-through; }
+.panel-config .panel-name { font-size: 13px; }
+.panel-config .move {
+  border: 1px solid var(--border); background: var(--surface);
+  border-radius: 5px; padding: 2px 8px; line-height: 1.2; font-size: 12px;
+}
+.panel-config .move[disabled] { opacity: .35; cursor: default; }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  padding: 12px 16px 40px;
+  align-items: start;
+}
+@media (max-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+.charts { min-width: 0; }
+.chart-wrap { position: relative; }
+.chart-daily  { width: 100%; height: 1680px; }
+
+/* Layer for the tooltip boxes per panel. pointer-events off, so that zoom and
+   crosshair are not blocked. */
+.panel-values { position: absolute; inset: 0; pointer-events: none; }
+
+/* The box itself. The class chart-tooltip supplies the inner structure; the
+   outside is set by ECharts via JavaScript for its own tooltip, so here it
+   stands in the stylesheet. */
+.panel-values .pv-box {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 9px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .16);
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.chart-weekly { width: 100%; height: 560px; }
+
+.sidebar {
+  position: sticky; top: 72px;
+  display: flex; flex-direction: column; gap: 12px;
+  max-height: calc(100vh - 100px);
+}
+.card {
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface-2);
+  padding: 14px;
+  display: flex; flex-direction: column;
+  min-height: 0;   /* otherwise the card does not shrink and the content overflows */
+}
+.card h3 { margin: 0 0 10px; font-size: 14px; }
+
+/* Favorites: the sparkline stands between name and price, so that the column
+   of numbers stays flush right and values can be compared down the list. */
+/* The favorites keep their height (flex-shrink 0) and scroll within
+   themselves when needed. Without that the signal list below squeezes the
+   card down to a few pixels. */
+.favorites { flex: 0 0 auto; }
+.fav-list {
+  list-style: none; margin: 0; padding: 0;
+  max-height: min(320px, 38vh); overflow-y: auto;
+}
+.fav-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px auto 18px;
+  align-items: center; gap: 8px;
+  padding: 7px 6px; border-radius: 6px; cursor: pointer;
+}
+.fav-list li:hover { background: var(--surface-3); }
+.fav-list li.active { background: var(--surface-3); box-shadow: inset 3px 0 0 var(--series-1); }
+.fav-sym  { font-weight: 600; font-size: 13px; }
+.fav-name {
+  font-size: 11px; color: var(--text-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fav-spark { display: block; }
+.fav-nums { text-align: right; font-variant-numeric: tabular-nums; }
+.fav-last { font-size: 13px; }
+.fav-chg  { font-size: 11px; font-weight: 600; }
+.fav-chg.up   { color: var(--up); }
+.fav-chg.down { color: var(--down); }
+.fav-del {
+  border: 0; background: none; color: var(--text-muted);
+  padding: 0 2px; font-size: 15px; line-height: 1; opacity: 0;
+}
+.fav-list li:hover .fav-del, .fav-del:focus-visible { opacity: 1; }
+.fav-del:hover { color: var(--down); }
+.fav-error { font-size: 11px; color: var(--down); }
+
+.signals { flex: 1 1 auto; }
+.filters { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.filters button { padding: 3px 9px; font-size: 12px; border-radius: 999px; }
+.signals ol { list-style: none; margin: 0; padding: 0; overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+.signals li {
+  display: grid; grid-template-columns: 78px 1fr; gap: 8px;
+  padding: 6px 8px; border-radius: 5px; cursor: pointer; font-size: 13px;
+}
+.signals li:hover { background: var(--surface-3); }
+.signals li time { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.signals li .dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  margin-right: 6px; vertical-align: 1px;
+  background: var(--text-muted);
+}
+.signals li .dot-up    { background: var(--up); }
+.signals li .dot-down  { background: var(--down); }
+.signals li .dot-close { background: var(--series-1); }
+.hint { margin: 10px 0 0; font-size: 12px; color: var(--text-muted); }
+
+/* Tooltip of the charts.
+ *
+ * ECharts otherwise sets the colour dot and the alignment via style
+ * attributes inside innerHTML. The Content-Security-Policy allows no
+ * 'unsafe-inline' for styles, which is why such attributes have no effect --
+ * names and values stuck together and the colour dots were missing entirely.
+ * Everything therefore stands here as a class; the frame of the box still
+ * comes from ECharts, which sets it via JavaScript and thus does not fall
+ * under the rule.
+ */
+.chart-tooltip .tt-head {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.chart-tooltip .tt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.6;
+}
+.chart-tooltip .tt-name { flex: 1 1 auto; }
+.chart-tooltip .tt-val {
+  margin-left: 18px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.chart-tooltip .tt-dot {
+  flex: 0 0 auto;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.chart-tooltip .tt-s1 { background: var(--series-1); }
+.chart-tooltip .tt-s2 { background: var(--series-2); }
+.chart-tooltip .tt-s3 { background: var(--series-3); }
+.chart-tooltip .tt-s4 { background: var(--series-4); }
+.chart-tooltip .tt-s5 { background: var(--series-5); }
+.chart-tooltip .tt-s7 { background: var(--series-7); }
+.chart-tooltip .tt-up   { background: var(--up); }
+.chart-tooltip .tt-down { background: var(--down); }
+
+/* Monthly position: the numbers from completed months that the EMA8/EMA12
+   rule refers to. */
+.monthly { flex: 0 0 auto; }
+.mon-verdict {
+  margin: 0 0 10px;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 3px solid var(--text-muted);
+  background: var(--surface);
+}
+.mon-verdict.above   { border-left-color: var(--up); }
+.mon-verdict.between { border-left-color: var(--series-4); }
+.mon-verdict.below   { border-left-color: var(--down); }
+.mon-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 12px;
+  margin: 0;
+  font-size: 13px;
+}
+.mon-grid dt { color: var(--text-2); }
+.mon-grid dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+/* The distance stands left of the value, coloured by its sign. Careful when
+   reading: positive here means "the level lies above the price", not "gain"
+   -- the direction of view differs from that of a price change. The position
+   is stated in the sentence above as well. */
+.mon-grid dd .delta {
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 14px;
+}
+.mon-grid dd .delta.up   { color: var(--up); }
+.mon-grid dd .delta.down { color: var(--down); }
+.signals li .dot-month { background: var(--series-7); }
+
+/* Narrow screens. The threshold matches NARROW_WIDTH in app.js -- there the
+   title and legend of the panels move one below the other, here everything
+   around them does. */
+@media (max-width: 760px) {
+  .topbar { gap: 6px; padding: 8px 10px; }
+  .label-long { display: none; }
+  .label-short { display: inline; }
+
+  /* This lets the top bar get by with three lines:
+       1  ticker · star · theme · language · sign out
+       2  period presets · calendar
+       3  tabs · panels
+     The date fields appear as a fourth line only on request. */
+  .brand { display: none; }         /* a whole line for our own name */
+
+  /* The order deliberately departs from the source: without it the sign-out
+     button ends up on a third line, while the period buttons squeeze the
+     input field down to two characters. This way search and sign-out share
+     the first line, and the periods get the second. */
+  .search       { order: 1; flex: 1 1 120px; min-width: 0; }
+  .logout       { order: 2; margin-left: 0; gap: 6px; }
+  .ranges       { order: 3; flex: 0 1 auto; }
+  #toggle-dates { order: 4; display: inline-flex; align-items: center; }
+  .custom-range { order: 5; }
+
+  .search input { width: 100%; min-width: 0; }
+  .suggestions { width: min(92vw, 340px); }
+  .user { display: none; }          /* the name costs more room than it is worth */
+
+  .watchlist { padding: 8px 10px 0; }
+  .quote { padding: 12px 10px 0; gap: 8px; }
+  .quote h2 { font-size: 19px; }
+  .tabs { padding: 10px 10px 0; flex-wrap: wrap; }
+  /* A date field cannot be squeezed below roughly 134 pixels in Chrome (date
+     plus calendar icon). Two of them side by side plus the button burst 390
+     pixels of screen width -- the button therefore gets a line of its own.
+     Folded away the fields cost nothing at all, since they are needed less
+     often than the presets beside them. */
+  .custom-range { display: none; flex: 1 1 100%; flex-wrap: wrap; }
+  .custom-range.open { display: flex; }
+  .custom-range input[type="date"] { flex: 1 1 40%; width: auto; min-width: 0; }
+  .custom-range #apply-range { flex: 1 1 100%; }
+  .status { margin: 10px; }
+
+  .layout { padding: 10px 8px 32px; gap: 10px; }
+
+  /* The sidebar stands below the chart. If it sticks there, a box arises that
+     scrolls within itself instead of travelling with the page. */
+  .sidebar { position: static; max-height: none; }
+  .signals ol { max-height: min(420px, 60vh); }
+  .fav-list { max-height: min(280px, 45vh); }
+}
+
+/* --- No automatic zooming in on touch devices ---------------------------- */
+/* iOS Safari zooms the page in by itself when an input field is tapped, as
+   soon as its font is smaller than 16px -- body stands at 14px and the fields
+   inherit that via "font: inherit". Afterwards the page stays enlarged and
+   the chart sticks out of the picture sideways.
+   16px prevents that. Deliberately NOT solved via "maximum-scale=1" or
+   "user-scalable=no" in the viewport: that also forbids enlarging by gesture
+   and is therefore a step backwards for usability.
+   (pointer: coarse) targets fingers rather than screen width -- a tablet 1000
+   pixels wide would otherwise zoom just the same.
+   The date fields are deliberately left out: they stand side by side in pairs
+   and at 16px no longer fit on one line at 390px width (see the comment at
+   .custom-range). They are rarely needed. */
+@media (pointer: coarse) {
+  input[type="text"],
+  input[type="password"] {
+    font-size: 16px;
+  }
+
+  /* Finger-wide targets in the suggestion list. At 7px of padding the rows
+     are roughly 30px high -- too little to hit reliably, and the neighbour or
+     the row below gets taken along. 44px is the usual measure. */
+  .suggestions { padding: 6px; overscroll-behavior: contain; }
+  .suggestions li {
+    display: flex; flex-direction: column; justify-content: center; gap: 2px;
+    min-height: 44px; padding: 9px 12px;
+  }
+  .suggestions .sym { margin-right: 0; }
+  /* :hover sticks to the finger, :active gives the feedback. */
+  .suggestions li:hover { background: none; }
+  .suggestions li:active { background: var(--surface-3); }
+
+  /* Suppresses the double-tap zoom and with it the delay the browser
+     otherwise inserts before every click to check for a second tap. */
+  button, .suggestions li { touch-action: manipulation; }
+}

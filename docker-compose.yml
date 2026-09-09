@@ -1,0 +1,29 @@
+services:
+  chart:
+    build: .
+    image: chart:latest
+    container_name: chart
+    restart: always
+    env_file: .env
+    # Hardening: no privilege escalation, no capabilities. The application
+    # listens on 8080 (>1024), so it does not need NET_BIND_SERVICE either.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Limits: measured usage ~95 MiB / 14 processes. The cap is meant to
+    # catch an outlier, not to slow down normal operation.
+    mem_limit: 1g
+    cpus: 2.0
+    pids_limit: 150
+    ports:
+      # Reachable locally only -- outwards it goes through the Apache vhost
+      - 127.0.0.1:8133:8080
+    volumes:
+      # Users, sessions, watchlist and the price cache
+      - /srv/docker-volumes/chart/data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

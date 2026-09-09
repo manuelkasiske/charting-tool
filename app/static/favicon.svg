@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Chart">
+<title>Chart</title>
+<!--
+  Strichzeichnung in Schwarz/Weiss: drei steigende Saeulen mit Trendpfeil.
+
+  Bewusst nur <line>-Elemente in einer einzigen Gruppe. Verschachtelte
+  Gruppen, <path> und <polyline> zeichnen zwar alle Browser, aber einfache
+  Rasterizer (etwa der eingebaute von ImageMagick) steigen dabei aus. So
+  laesst sich aus derselben Datei auch das Ersatzbild erzeugen.
+
+  Die Farbe steht als Attribut, damit sie auch ohne CSS gilt, und wird per
+  Medienabfrage auf Weiss gedreht: schwarze Striche verschwinden sonst in
+  einer dunklen Tableiste.
+-->
+<style>
+  .ink { stroke: #0b0b0b; }
+  @media (prefers-color-scheme: dark) { .ink { stroke: #ffffff; } }
+</style>
+<g class="ink" stroke="#0b0b0b" stroke-width="2.8" stroke-linecap="round">
+  <line x1="6"    y1="27.5" x2="6"    y2="21"/>
+  <line x1="16"   y1="27.5" x2="16"   y2="17"/>
+  <line x1="26"   y1="27.5" x2="26"   y2="13"/>
+  <line x1="3.5"  y1="11.5" x2="11.5" y2="6.5"/>
+  <line x1="11.5" y1="6.5"  x2="17"   y2="10"/>
+  <line x1="17"   y1="10"   x2="27.5" y2="3"/>
+  <line x1="22.5" y1="3"    x2="27.5" y2="3"/>
+  <line x1="27.5" y1="3"    x2="27.5" y2="8"/>
+</g>
+</svg>

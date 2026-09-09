@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Chart</title>
+<link rel="icon" href="/static/favicon.png?v={{ asset_version }}" type="image/png" sizes="32x32">
+<link rel="alternate icon" href="/static/favicon.ico?v={{ asset_version }}" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v={{ asset_version }}">
+<link rel="stylesheet" href="/static/style.css?v={{ asset_version }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">chart<span>.robertbln.com</span></div>
+
+  <div class="search">
+    <input id="symbol" type="text" placeholder="{{ t('index.ticker_placeholder') }}"
+           autocomplete="off" autocapitalize="characters" spellcheck="false"
+           aria-label="{{ t('index.ticker_aria') }}">
+    <ul id="suggestions" class="suggestions" hidden></ul>
+    <button id="star" type="button" class="ghost"
+            title="{{ t('index.add_to_watchlist') }}">☆</button>
+  </div>
+
+  <nav class="ranges" id="ranges" aria-label="{{ t('index.ranges_aria') }}">
+    <button type="button" data-range="6mo">{{ t("index.range_6mo") }}</button>
+    <button type="button" data-range="1y" class="active">{{ t("index.range_1y") }}</button>
+    <button type="button" data-range="2y">{{ t("index.range_2y") }}</button>
+    <button type="button" data-range="5y">{{ t("index.range_5y") }}</button>
+    <button type="button" data-range="max">{{ t("index.range_max") }}</button>
+  </nav>
+
+  <!-- Only visible on narrow screens: unfolds the date fields. -->
+  <button type="button" id="toggle-dates" class="ghost"
+          aria-expanded="false" aria-controls="custom-range"
+          title="{{ t('index.custom_range') }}">📅</button>
+
+  <div class="custom-range" id="custom-range">
+    <label class="sr-only" for="date-from">{{ t("index.date_from") }}</label>
+    <input type="date" id="date-from">
+    <span class="dash" aria-hidden="true">–</span>
+    <label class="sr-only" for="date-to">{{ t("index.date_to") }}</label>
+    <input type="date" id="date-to">
+    <button type="button" id="apply-range">{{ t("index.apply") }}</button>
+  </div>
+
+  <form method="post" action="/logout" class="logout">
+    <button id="theme" type="button" class="ghost"
+            title="{{ t('index.theme') }}">◐</button>
+    <!-- A link rather than a button: switching is a GET, and inside this form
+         a button would have to be type="button" only to then navigate by
+         script -- which the Content-Security-Policy has no reason to allow. -->
+    <a class="ghost lang-switch" href="/lang/{{ 'en' if lang == 'de' else 'de' }}"
+       title="{{ t('index.language') }}">{{ 'EN' if lang == 'de' else 'DE' }}</a>
+    <span class="user">{{ username }}</span>
+    <button type="submit" class="ghost">{{ t("index.logout") }}</button>
+  </form>
+</header>
+
+<div id="watchlist" class="watchlist"></div>
+
+<div id="status" class="status" hidden></div>
+
+<section class="quote" id="quote" hidden>
+  <h2 id="q-symbol"></h2>
+  <span id="q-name" class="muted"></span>
+  <span id="q-last" class="last"></span>
+  <span id="q-change" class="change"></span>
+  <span id="q-cache" class="badge" hidden></span>
+</section>
+
+<div class="tabbar">
+  <nav class="tabs" id="tabs">
+    <button type="button" data-tab="daily" class="active"><span class="label-long">{{ t("index.tab_daily") }}</span><span class="label-short">{{ t("index.tab_daily_short") }}</span></button>
+    <button type="button" data-tab="weekly"><span class="label-long">{{ t("index.tab_weekly") }}</span><span class="label-short">{{ t("index.tab_weekly_short") }}</span></button>
+    <button type="button" data-tab="monthly"><span class="label-long">{{ t("index.tab_monthly") }}</span><span class="label-short">{{ t("index.tab_monthly_short") }}</span></button>
+  </nav>
+  <button type="button" id="toggle-panels" class="ghost"
+          aria-expanded="false" aria-controls="panel-config"><span class="label-long">{{ t("index.panels_toggle") }}</span><span class="label-short">{{ t("index.panels_toggle_short") }}</span></button>
+</div>
+
+<section class="panel-config" id="panel-config" hidden>
+  <h3>{{ t("index.panels_heading") }}</h3>
+  <p class="hint">{{ t("index.panels_hint") }}</p>
+  <ul id="panel-list"></ul>
+  <button type="button" id="reset-panels" class="ghost">{{ t("index.panels_reset") }}</button>
+</section>
+
+<main class="layout">
+  <div class="charts">
+    <div class="chart-wrap" id="chart-daily-wrap">
+      <div id="chart-daily" class="chart-daily"></div>
+      <!-- Values per panel, laid over the chart. aria-hidden, because it is a
+           repetition of what the chart already shows. -->
+      <div id="panel-values" class="panel-values" aria-hidden="true"></div>
+    </div>
+    <div id="chart-weekly" class="chart-weekly" hidden></div>
+    <div id="chart-monthly" class="chart-weekly" hidden></div>
+  </div>
+
+  <aside class="sidebar">
+    <section class="card favorites">
+      <h3>{{ t("index.favorites") }} <span id="fav-count" class="muted"></span></h3>
+      <ul id="fav-list" class="fav-list"></ul>
+      <p class="hint" id="fav-empty">
+        {{ t("index.favorites_empty") }}
+      </p>
+    </section>
+
+    <section class="card monthly" id="monthly-card" hidden>
+      <h3>{{ t("index.monthly_heading") }} <span id="mon-months" class="muted"></span></h3>
+      <p class="mon-verdict" id="mon-verdict"></p>
+      <dl class="mon-grid" id="mon-grid"></dl>
+      <p class="hint" id="mon-note"></p>
+    </section>
+
+    <section class="card signals">
+      <h3>{{ t("index.signals") }} <span id="sig-count" class="muted"></span></h3>
+      <div class="filters" id="sig-filters"></div>
+      <ol id="sig-list"></ol>
+      <p class="hint">{{ t("index.signals_hint") }}</p>
+    </section>
+  </aside>
+</main>
+
+<script src="/static/vendor/echarts.min.js"></script>
+<script src="/static/app.js?v={{ asset_version }}"></script>
+</body>
+</html>

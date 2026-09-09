@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{{ t("login.title") }} &middot; Chart</title>
+<link rel="icon" href="/static/favicon.png?v={{ asset_version }}" type="image/png" sizes="32x32">
+<link rel="alternate icon" href="/static/favicon.ico?v={{ asset_version }}" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v={{ asset_version }}">
+<link rel="stylesheet" href="/static/style.css?v={{ asset_version }}">
+</head>
+<body class="login-page">
+  <main class="login-box">
+    <h1>chart<span>.robertbln.com</span></h1>
+    <p class="sub">{{ t("login.subtitle") }}</p>
+
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+    <form method="post" action="/login" autocomplete="on">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+
+      <label for="username">{{ t("login.username") }}</label>
+      <input id="username" name="username" type="text" required autofocus
+             autocapitalize="none" autocomplete="username" spellcheck="false">
+
+      <label for="password">{{ t("login.password") }}</label>
+      <input id="password" name="password" type="password" required
+             autocomplete="current-password">
+
+      <label class="check">
+        <input type="checkbox" name="remember"> {{ t("login.remember") }}
+      </label>
+
+      <button type="submit">{{ t("login.submit") }}</button>
+    </form>
+
+    <!-- Sitting outside the form on purpose: it is a link, not a submit, and
+         must not carry the entered password along. -->
+    <p class="lang-line">
+      <a class="lang-switch" href="/lang/{{ 'en' if lang == 'de' else 'de' }}"
+         title="{{ t('index.language') }}">{{ 'EN' if lang == 'de' else 'DE' }}</a>
+    </p>
+  </main>
+</body>
+</html>
