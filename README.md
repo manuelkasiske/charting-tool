@@ -11,6 +11,8 @@ library, is served from your own host.
 **Interface language:** German by default, switchable to English at any time
 with the button in the top bar. The code itself is English throughout.
 
+![The daily chart with price, RSI and the sidebar](assets/daily-chart.png)
+
 ---
 
 ## What it does
@@ -35,6 +37,18 @@ that date.
 
 **Watchlist** with the current price, the daily change and a sparkline, plus a
 quick-select row in the header.
+
+The monthly chart, here in the dark theme, next to the card that reads the
+price against the settled EMA levels:
+
+![The monthly chart in the dark theme](assets/monthly-chart-dark.png)
+
+The same daily view with the interface set to German. The `DE`/`EN` button in
+the top bar is a plain link: it stores the choice in a cookie and reloads, so
+no client-side script has to be allowed past the Content-Security-Policy. The
+prices come back out of the local store, not from Yahoo:
+
+![The daily chart with a German interface](assets/daily-chart-german.png)
 
 ## How it is put together
 
