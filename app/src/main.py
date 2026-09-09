@@ -1,4 +1,4 @@
-"""chart.robertbln.com -- price charts with indicators, behind a sign-in.
+"""A self-hosted charting tool -- price charts with indicators, behind a sign-in.
 
 Started in the container via uvicorn (see Dockerfile). Create a user with:
 
@@ -39,9 +39,19 @@ if not config.SECRET_KEY or len(config.SECRET_KEY) < 32:
         '  SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_hex(32))")'
     )
 
-app = FastAPI(title="chart.robertbln.com", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title=config.BRAND, docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+
+
+def brand_parts() -> tuple[str, str]:
+    """config.BRAND split for the two weights the template renders it in.
+
+    Up to the first dot goes into the strong part, the dot and everything
+    after it into the muted one. A name without a dot stays in one piece.
+    """
+    head, dot, tail = config.BRAND.partition(".")
+    return head, dot + tail
 
 
 def _asset_version() -> str:
@@ -204,7 +214,8 @@ def login_form(request: Request):
     response = templates.TemplateResponse(
         request, "login.html",
         {"csrf": csrf, "error": None, "asset_version": ASSET_VERSION,
-         "lang": language, "t": i18n.translator(language)}
+         "lang": language, "t": i18n.translator(language),
+         "brand": brand_parts()}
     )
     # Double submit cookie: the form carries the same value as a hidden field,
     # a foreign form could not get at the cookie.
@@ -237,7 +248,7 @@ def login_submit(
         resp = templates.TemplateResponse(
             request, "login.html",
             {"csrf": token, "error": message, "asset_version": ASSET_VERSION,
-             "lang": language, "t": t},
+             "lang": language, "t": t, "brand": brand_parts()},
             status_code=status
         )
         resp.set_cookie(
@@ -314,7 +325,8 @@ def index(request: Request):
     return templates.TemplateResponse(
         request, "index.html",
         {"username": user["username"], "asset_version": ASSET_VERSION,
-         "lang": language, "t": i18n.translator(language)})
+         "lang": language, "t": i18n.translator(language),
+         "brand": brand_parts()})
 
 
 # --- API ------------------------------------------------------------------

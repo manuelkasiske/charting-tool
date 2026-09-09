@@ -140,6 +140,7 @@ Everything is set through the environment, usually in `.env`. Only
 
 | Variable | Default | Meaning |
 |---|---|---|
+| `BRAND` | `charting-tool` | Name in the top bar and above the sign-in form. Everything up to the first dot is set in the strong colour, the rest muted — `chart.example.com` reads as one name in two weights. |
 | `SECRET_KEY` | — | At least 32 characters. Generate with `python3 -c "import secrets; print(secrets.token_hex(32))"` |
 | `DATA_DIR` | `/data` | Directory of the SQLite database and the log, inside the container |
 | `SESSION_HOURS` | `12` | Lifetime of a normal session |

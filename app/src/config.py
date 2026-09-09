@@ -43,3 +43,12 @@ LOG_BACKUPS = int(os.getenv("LOG_BACKUPS", "5"))
 # Time zone of the timestamps in the access log. The container runs on UTC,
 # but the log is meant to be read by a person in Berlin.
 LOG_TIMEZONE = os.getenv("LOG_TIMEZONE", "Europe/Berlin")
+
+# Name in the top bar and above the sign-in form. Everything up to the first
+# dot is set in the strong colour, the rest muted, so "chart.example.com"
+# reads as one name in two weights.
+#
+# Configurable rather than written into the template: the repository is
+# public, and a particular deployment's domain has no business sitting in it
+# -- neither for whoever clones this, nor for whoever runs it.
+BRAND = os.getenv("BRAND", "charting-tool")

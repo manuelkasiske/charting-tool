@@ -12,7 +12,7 @@
 </head>
 <body class="login-page">
   <main class="login-box">
-    <h1>chart<span>.robertbln.com</span></h1>
+    <h1>{{ brand[0] }}<span>{{ brand[1] }}</span></h1>
     <p class="sub">{{ t("login.subtitle") }}</p>
 
     {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}

@@ -1,4 +1,4 @@
-/* Interface for chart.robertbln.com.
+/* Interface for the charting tool.
  *
  * The daily chart consists of several coordinate systems ("grids") stacked on
  * top of each other with a shared time axis. One crosshair runs across all
