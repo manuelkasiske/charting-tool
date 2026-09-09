@@ -25,7 +25,13 @@ __pycache__/
 # Documentation of the live installation -- stays on the server. It names
 # host paths, the fail2ban thresholds and findings from a security audit of
 # the running site, none of which belongs in a public repository.
-DOKUMENTATION-TECHNIK.md
-DOKUMENTATION-SICHERHEIT.md
+# Wildcards on purpose: an exact filename here would not have covered
+# DOKUMENTATION-TECHNIK.md.vor-doku-update-20260909 and the like.
+DOKUMENTATION-*
 docs/
 info.txt
+
+# Any file kept aside before a manual edit, whatever it was named after.
+*.vor-*
+*.backup
+*~
