@@ -255,6 +255,25 @@ input:focus-visible, button:focus-visible {
 .quote .change { font-variant-numeric: tabular-nums; font-weight: 600; }
 .quote .change.up   { color: var(--up); }
 .quote .change.down { color: var(--down); }
+.quote .beta { font-size: 14px; font-variant-numeric: tabular-nums; cursor: help; }
+.quote .beta.down { color: var(--down); }
+/* Comparison: on the right of the quote line. The line in the chart takes the
+   text colour -- it stands apart from all coloured lines and follows the theme. */
+.cmp-form { display: inline-flex; gap: 6px; margin-left: auto; align-self: center; }
+.cmp-form input {
+  font: inherit; font-size: 13px; width: 130px; padding: 5px 8px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text); text-transform: uppercase;
+}
+.cmp-form input::placeholder { text-transform: none; }
+.cmp-form button { font-size: 13px; padding: 5px 10px; }
+.cmp-chip {
+  display: inline-flex; align-items: center; gap: 6px; align-self: center;
+  font-size: 13px; padding: 2px 4px 2px 10px;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--surface-2);
+}
+.cmp-swatch { width: 14px; height: 0; border-top: 2px dashed var(--text); }
+.cmp-chip button { padding: 0 8px; font-size: 14px; line-height: 22px; }
 .badge {
   font-size: 11px; padding: 2px 8px; border-radius: 999px;
   background: var(--surface-3); color: var(--text-2);
@@ -300,6 +319,8 @@ input:focus-visible, button:focus-visible {
   align-items: start;
 }
 @media (max-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.layout.wide { grid-template-columns: minmax(0, 1fr); }
+.layout.wide .sidebar { display: none; }
 
 .charts { min-width: 0; }
 .chart-wrap { position: relative; }
@@ -434,6 +455,7 @@ input:focus-visible, button:focus-visible {
 .chart-tooltip .tt-s4 { background: var(--series-4); }
 .chart-tooltip .tt-s5 { background: var(--series-5); }
 .chart-tooltip .tt-s7 { background: var(--series-7); }
+.chart-tooltip .tt-cmp { background: var(--text); }
 .chart-tooltip .tt-up   { background: var(--up); }
 .chart-tooltip .tt-down { background: var(--down); }
 
@@ -566,3 +588,162 @@ input:focus-visible, button:focus-visible {
      otherwise inserts before every click to check for a second tap. */
   button, .suggestions li { touch-action: manipulation; }
 }
+
+/* --- Figures and tables (Portfolio Tracker) ------------------------------- */
+/* The figures. Grid rather than flex, so the cards stay equally wide and the
+   numbers stand above one another -- that way they can be compared. */
+.kpi-cards {
+  display: grid; gap: 10px; margin: 12px 0;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.kpi-card {
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface-2); padding: 10px 12px;
+}
+.kpi-card-label { font-size: 12px; color: var(--text-muted); }
+.kpi-card-value {
+  font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+.kpi-card-value.up   { color: var(--up); }
+.kpi-card-value.down { color: var(--down); }
+.kpi-card-note { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* On narrow screens a table can grow wider than the page. It therefore
+   scrolls within itself instead of dragging the whole page sideways. */
+.table-wrap { overflow-x: auto; }
+.data-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.data-table th, .data-table td {
+  text-align: left; padding: 7px 10px; white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+.data-table th { color: var(--text-2); font-weight: 600; font-size: 12px; }
+.data-table td { font-variant-numeric: tabular-nums; }
+.data-table td.up   { color: var(--up); font-weight: 600; }
+.data-table td.down { color: var(--down); font-weight: 600; }
+
+/* --- Portfolio Tracker ------------------------------------------------------ */
+/* The tracked portfolio: someone else's trades, not tied to the chosen
+   symbol. */
+.portfolio { min-width: 0; }
+.portfolio h3 { font-size: 14px; margin: 18px 0 6px; }
+.pf-table tbody tr { cursor: pointer; }
+.pf-table tbody tr:hover td { background: var(--surface-2); }
+.pf-table td.num, .pf-table th.num,
+.pf-draft td.num { text-align: right; }
+.pf-table tr.pf-total td { font-weight: 600; border-top: 2px solid var(--border); cursor: default; }
+/* The ticker stays in place when a table scrolls sideways on a narrow
+   screen -- otherwise one no longer knows which row one is reading on the
+   right. It is not the first column everywhere; "sticky" with left: 0 also
+   holds the second or third as soon as it reaches the left edge, and the
+   columns before it slide underneath. Hence the background. */
+#pf-positions th:nth-child(1), #pf-positions td:nth-child(1),
+#pf-realized  th:nth-child(2), #pf-realized  td:nth-child(2),
+#pf-journal   th:nth-child(3), #pf-journal   td:nth-child(3) {
+  position: sticky; left: 0; z-index: 1;
+  background: var(--surface);
+  box-shadow: 1px 0 0 var(--border);
+}
+#pf-positions tbody tr:hover td:nth-child(1),
+#pf-realized  tbody tr:hover td:nth-child(2),
+#pf-journal   tbody tr:hover td:nth-child(3) { background: var(--surface-2); }
+.pf-side-buy  { color: var(--up); font-weight: 600; }
+.pf-side-sell { color: var(--down); font-weight: 600; }
+.pf-est { color: var(--text-muted); font-style: italic; }
+.pf-del { padding: 2px 8px; font-size: 12px; }
+.pf-sort {
+  font: inherit; color: inherit; background: none; border: 0;
+  padding: 0; cursor: pointer; white-space: nowrap;
+}
+.pf-sort:hover { color: var(--text); text-decoration: underline; }
+th[aria-sort="ascending"] .pf-sort, th[aria-sort="descending"] .pf-sort { color: var(--text); }
+.pf-warnings { list-style: none; margin: 0; padding: 0; font-size: 12px; color: var(--text-2); }
+.pf-warnings li { border-left: 3px solid var(--series-4); padding: 2px 8px; margin-bottom: 4px; }
+
+.pf-form {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 14px; margin-bottom: 8px;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface-2);
+}
+.pf-form label { font-size: 13px; color: var(--text-2); }
+.pf-form textarea {
+  font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  width: 100%; box-sizing: border-box; resize: vertical;
+  padding: 8px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text);
+}
+.pf-form-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pf-form input[type="date"], .pf-draft input, .pf-draft select {
+  font: inherit; padding: 5px 7px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text);
+}
+.pf-form button[type="submit"], .pf-save {
+  background: var(--series-1); border-color: var(--series-1); color: #fff;
+}
+.pf-draft input.pf-in-sym { width: 80px; text-transform: uppercase; }
+.pf-draft input.pf-in-num { width: 90px; }
+.pf-save { margin: 8px 0 4px; }
+.pf-journal { margin-top: 18px; }
+
+/* --- Notices on the favorites ------------------------------------------- */
+/* Stands above the favorites, being the one thing in the sidebar that
+   suggests an action. With nothing to report only the line below remains. */
+.notices { flex: 0 0 auto; }
+.notice-list { list-style: none; margin: 0; padding: 0; }
+.notice {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "head action" "detail action";
+  align-items: center; gap: 2px 8px;
+  padding: 8px 10px; margin-bottom: 6px;
+  border-radius: 6px; cursor: pointer;
+  background: var(--surface);
+  border-left: 3px solid var(--text-muted);
+}
+.notice:hover { background: var(--surface-3); }
+.notice-head { grid-area: head; display: flex; align-items: baseline; gap: 8px; }
+.notice-sym { font-weight: 600; font-size: 13px; }
+.notice-tag { font-size: 11px; font-weight: 600; }
+.notice-detail {
+  grid-area: detail; font-size: 11px; color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.notice-action { grid-area: action; font-size: 11px; padding: 4px 8px; }
+
+/* Buy green, sell red -- the same mapping as everywhere else in the chart.
+   The colour does not carry the meaning alone: the word stands beside it. */
+.notice-buy           { border-left-color: var(--up); }
+.notice-buy .notice-tag { color: var(--up); }
+.notice-sell          { border-left-color: var(--down); }
+.notice-sell .notice-tag { color: var(--down); }
+.notice-overbought    { border-left-color: var(--series-4); }
+.notice-overbought .notice-tag { color: var(--series-4); }
+.notice-sell_wait_buy { border-left-color: var(--series-1); }
+.notice-sell_wait_buy .notice-tag { color: var(--series-1); }
+
+
+/* --- User management ---------------------------------------------------- */
+.admin { max-width: 1200px; margin: 0 auto; padding: 16px 16px 40px; }
+.admin h2 { font-size: 20px; margin: 4px 0 12px; }
+.admin h3 { font-size: 14px; margin: 22px 0 8px; }
+.adm-table td { vertical-align: middle; }
+.adm-group-cell { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.adm-check { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; white-space: nowrap; }
+.adm-label { font-size: 13px; color: var(--text-2); }
+.adm-nowrap { white-space: nowrap; }
+.adm-small { padding: 3px 9px; font-size: 12px; }
+.adm-danger { color: var(--down); }
+.adm-pw {
+  font: inherit; font-size: 13px; width: 150px; padding: 4px 7px; margin-right: 4px;
+  border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text);
+}
+.adm-create input[type="text"], .adm-create input[type="password"] {
+  font: inherit; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text);
+}
+.status.adm-error { border-left-color: var(--down); }
+.adm-groups { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 13px; margin: 0; }
+.adm-groups dt { font-weight: 600; }
+.adm-groups dd { margin: 0; color: var(--text-2); }

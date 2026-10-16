@@ -2,6 +2,7 @@
 
 import hmac
 import logging
+import re
 import secrets
 import time
 
@@ -18,6 +19,55 @@ log = logging.getLogger("chart.auth")
 _hasher = PasswordHasher(time_cost=3, memory_cost=64 * 1024, parallelism=2)
 
 SESSION_COOKIE = "chart_session"
+
+# Groups and what each one may do. "admin" implies everything; a user may be
+# in several groups, the permissions add up.
+GROUPS = ("admin", "portfolio", "general")
+PERMISSIONS = {
+    "app": {"admin", "portfolio", "general"},   # charts, favorites, notices
+    "portfolio_view": {"admin", "portfolio"},     # the Portfolio Tracker tab
+    "portfolio_edit": {"admin"},                # entering and deleting its trades
+    "admin": {"admin"},                       # the user management
+}
+
+USERNAME_RE = re.compile(r"^[a-z0-9._-]{2,32}$")
+MIN_PASSWORD = 12
+MAX_PASSWORD = 200
+
+
+def groups_of(user_id: int) -> list[str]:
+    with db.cursor() as conn:
+        rows = conn.execute("SELECT grp FROM user_groups WHERE user_id = ?", (user_id,)).fetchall()
+    return sorted((r["grp"] for r in rows), key=GROUPS.index)
+
+
+def can(user: dict | None, permission: str) -> bool:
+    return bool(user) and bool(set(user.get("groups") or ()) & PERMISSIONS[permission])
+
+
+def set_groups(user_id: int, groups) -> None:
+    wanted = [g for g in GROUPS if g in set(groups)]
+    with db.cursor() as conn:
+        conn.execute("DELETE FROM user_groups WHERE user_id = ?", (user_id,))
+        conn.executemany("INSERT INTO user_groups (user_id, grp) VALUES (?, ?)",
+                         [(user_id, g) for g in wanted])
+
+
+def default_groups() -> list[str]:
+    """Groups for a user created without naming any (cli adduser).
+
+    The very first admin has to come from somewhere: as long as nobody holds
+    the admin group, a new user gets it. After that a new user starts in
+    "general" only.
+    """
+    with db.cursor() as conn:
+        has_admin = conn.execute("SELECT 1 FROM user_groups WHERE grp = 'admin' LIMIT 1").fetchone()
+    return ["general"] if has_admin else ["admin", "general"]
+
+
+def end_sessions_of(user_id: int) -> int:
+    with db.cursor() as conn:
+        return conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,)).rowcount
 
 
 def hash_password(password: str) -> str:
@@ -125,6 +175,8 @@ def verify(username: str, password: str, ip: str) -> int | None:
         conn.execute(
             "DELETE FROM login_attempts WHERE username = ? OR ip = ?", (username, ip)
         )
+        conn.execute("UPDATE users SET last_login = ? WHERE id = ?",
+                     (int(time.time()), row["id"]))
     return row["id"]
 
 
@@ -162,7 +214,8 @@ def lookup_session(token: str | None):
     if row["expires_at"] < time.time():
         end_session(token)
         return None
-    return {"user_id": row["user_id"], "username": row["username"]}
+    return {"user_id": row["user_id"], "username": row["username"],
+            "groups": groups_of(row["user_id"])}
 
 
 def end_session(token: str | None) -> None:

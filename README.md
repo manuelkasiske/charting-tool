@@ -1,8 +1,9 @@
 # charting-tool
 
 A small, self-hosted stock charting web app: daily, weekly and monthly price
-charts with the usual technical indicators, a watchlist, and an automatically
-derived signal list — behind a sign-in, for a handful of users.
+charts with the usual technical indicators, a watchlist, an automatically
+derived signal list and a portfolio tracker — behind a sign-in with user
+groups, for a handful of users.
 
 Price data comes from the public Yahoo Finance endpoints. No API key, no
 account, no third-party JavaScript: everything, including the charting
@@ -38,7 +39,39 @@ the visible window, filterable by kind. Clicking an entry jumps the chart to
 that date.
 
 **Watchlist** with the current price, the daily change and a sparkline, plus a
-quick-select row in the header.
+quick-select row in the header. **Notices** flag favorites whose daily RSI is
+at or beyond 30/70.
+
+**Key figures next to the price:** the **beta** against the S&P 500 (five
+years of monthly returns, as Yahoo defines it; weekly returns for young
+listings, flagged as uncertain) and the **free cash flow** of the last twelve
+months, with operating cash flow, capital expenditure, the year before and
+the last fiscal years on hover.
+
+**Comparison.** A second symbol can be laid over the price panel of the daily
+chart. It is rescaled so that both lines start at the same point on the first
+day of the window; the panel then shows both changes in percent, and the
+moving averages step back so the two closes stand out.
+
+**Portfolio Tracker** — for following the published trades of someone else
+(a newsletter, a community, a channel):
+
+- Trades are entered by hand, or a whole post is pasted ("I'm adding; 30
+  shares of AAPL at an average cost of $190.") and read out into editable
+  rows before saving. A sell without a count closes the position; a trade
+  without a price is valued at that day's close and marked as estimated.
+- Lots are matched first in, first out. Open positions show shares, average
+  cost, today's price and change, invested and current value, result, weight
+  and beta, sortable by any column; closed trades show cost, proceeds and
+  result, both with a total row.
+- Figures for the whole journal: invested, open and realized result, today's
+  change, the money-weighted return (**IRR**, like Excel's XIRR) and the
+  true time-weighted return (**TTWROR**, as in Portfolio Performance).
+- Buys and sells appear as pins in the daily chart of the symbol, with a line
+  at the average cost of what is still held.
+
+The journal is shared: admins enter it, members of the `portfolio` group can
+read it.
 
 The monthly chart, here in the dark theme, next to the card that reads the
 price against the settled EMA levels:
@@ -78,9 +111,13 @@ app/
     indicators.py   SMA, EMA, RSI, MACD, Bollinger, Fibonacci
     signals.py      signal detection
     series.py       assembles the response for the frontend
-    cli.py          user management
-  static/           app.js, style.css, ECharts, icons
-  templates/        index.html, login.html
+    portfolio.py    portfolio tracker: reading posts, FIFO ledger, IRR, TTWROR
+    beta.py         beta against the S&P 500 from the price store
+    fundamentals.py free cash flow from Yahoo
+    notices.py      RSI notices for the favorites
+    cli.py          user management on the command line
+  static/           app.js, admin.js, style.css, ECharts, icons
+  templates/        index.html, login.html, admin.html
 Dockerfile
 docker-compose.yml
 ```
@@ -123,6 +160,16 @@ least 12 characters:
 ```bash
 docker compose exec chart python -m src.cli adduser yourname
 ```
+
+**The first user becomes the admin.** As long as no account holds the admin
+group, `adduser` gives a new user `admin` and `general`; everybody created
+after that starts in `general` only. To decide it yourself, name the groups:
+
+```bash
+docker compose exec chart python -m src.cli adduser yourname --groups admin,general
+```
+
+Further users are best created on the user management page (see below).
 
 The app now listens on `127.0.0.1:8133`. Open it through a reverse proxy (see
 below), or change the port mapping in `docker-compose.yml` to reach it
@@ -167,21 +214,49 @@ The equivalent in nginx is `proxy_set_header X-Real-IP $remote_addr;`.
 If you run it without a proxy over plain HTTP, set `COOKIE_SECURE=false` —
 otherwise the browser discards the session cookie and you can never sign in.
 
-### Managing users
+### Users and groups
+
+Every user is in one or more groups; the permissions add up. A user without
+any group cannot sign in.
+
+| Group | May |
+|---|---|
+| `admin` | everything, plus entering and deleting portfolio trades and managing users |
+| `portfolio` | charts, favorites, notices and the Portfolio Tracker tab, read only |
+| `general` | charts, favorites and notices, without the Portfolio Tracker |
+
+**In the browser:** admins find a *Users* button in the top bar (`/admin`).
+There they create users, tick groups (saved at once), set a new password,
+end a user's sessions and delete accounts. Nobody can take the admin group
+from themselves, the last admin keeps it, and one's own account cannot be
+deleted there. The page also shows each user's last sign-in and open
+sessions.
+
+**On the command line:**
 
 ```bash
-docker compose exec chart python -m src.cli adduser NAME    # create or reset
-docker compose exec chart python -m src.cli passwd  NAME    # same thing
-docker compose exec chart python -m src.cli sessions        # list sessions
-docker compose exec chart python -m src.cli sessions --clear  # end all of them
+docker compose exec chart python -m src.cli adduser NAME [--groups admin,portfolio,general]
+docker compose exec chart python -m src.cli passwd  NAME          # new password, groups unchanged
+docker compose exec chart python -m src.cli groups  NAME          # show the groups
+docker compose exec chart python -m src.cli groups  NAME admin general   # set them
+docker compose exec chart python -m src.cli sessions              # list sessions
+docker compose exec chart python -m src.cli sessions --clear      # end all of them
 ```
 
 Changing a password ends every session that user has, on every device.
+`groups` is also the way back in should the last admin ever lose the group —
+the web page refuses that, the shell does not.
+
+**Upgrading an installation from before the groups:** on the first start
+every existing user is put into `general`, and the oldest account — normally
+the one that set the installation up — into `admin` as well. Nobody is
+locked out; give the others further groups afterwards. Users and groups live
+only in the database, never in the repository.
 
 ### What to back up
 
-`DATA_DIR` (users, sessions, watchlist, the price store and the log) and the
-`.env`. Everything else is rebuilt from the repository. Losing the price store
+`DATA_DIR` (users and their groups, sessions, watchlist, the portfolio
+journal, the price store and the log) and the `.env`. Everything else is rebuilt from the repository. Losing the price store
 costs nothing but a few requests to Yahoo.
 
 ---
@@ -199,7 +274,12 @@ deliberate:
 - **Lockout by address**, not by username — otherwise anyone knowing a name
   could lock the legitimate user out at will.
 - **CSRF** on the sign-in form via a double-submit cookie, compared in
-  constant time.
+  constant time. Every request that changes something must in addition carry
+  an `X-Requested-With` header, which a foreign page cannot set without a
+  CORS preflight the app never answers.
+- **Permissions are checked on the server** for every call; hiding a tab or a
+  button in the interface is a courtesy, not the protection. Changes in the
+  user management are written to the access log.
 - **Content-Security-Policy** without `unsafe-inline` and without foreign
   origins; everything is served locally. Plus `nosniff`, `X-Frame-Options:
   DENY` and `Referrer-Policy: same-origin`.
@@ -211,11 +291,22 @@ Responses from Yahoo are validated for shape before use, and every individual
 price value is coerced to a number or discarded — a malformed response yields
 a readable error, not a 500.
 
+## Data from Yahoo
+
+Three public endpoints, none of which needs an account or a key:
+`v8/finance/chart` for prices, `v1/finance/search` for the symbol search and
+`ws/fundamentals-timeseries` for the free cash flow (ready-made TTM, per year
+and per quarter, also for non-US listings). The beta is computed here from
+the stored prices, since the endpoints that carry one want a cookie and
+crumb. All three are unofficial; if the fundamentals call fails, only the FCF
+figure is missing. Yahoo's data is meant for personal use.
+
 ## Adding a language
 
-`app/src/i18n.py` holds everything the server renders,
-`app/static/app.js` (the `TEXTS` table at the top) everything the browser
-draws. Add a third key to both, extend `LANGUAGES` in `i18n.py`, and add a
+`app/src/i18n.py` holds everything the server renders — including the texts
+of the user management page, which `admin.js` receives as a JSON data block —
+and `app/static/app.js` (the `TEXTS` table at the top) everything the
+browser draws. Add a third key to both, extend `LANGUAGES` in `i18n.py`, and add a
 link to the switch in `templates/index.html`. The keys are identical on both
 sides for anything that appears in both places.
 

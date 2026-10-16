@@ -297,6 +297,26 @@ def _cut(frame, window_start, window_end):
     return frame
 
 
+def closes(symbol: str, rng: str, start=None, end=None) -> dict:
+    """Only the daily closes of the window -- the comparison line in the chart.
+
+    No indicators and no run-up: the line is rescaled onto the main symbol
+    in the browser, nothing else is drawn from it.
+    """
+    window_start, window_end, _ = _window_bounds(rng, start, end)
+    since = 0 if window_start is None else int(window_start.timestamp())
+    result = store.load(symbol, "1d", since)
+    frame = _cut(result.frame, window_start, window_end)["Close"].dropna()
+    if frame.empty:
+        raise yahoo.YahooError(f"No data for {symbol}", "error.no_data", symbol=symbol)
+    return {
+        "symbol": symbol.upper(),
+        "currency": (result.meta or {}).get("currency", ""),
+        "dates": [d.strftime("%Y-%m-%d") for d in frame.index],
+        "close": [_clean(v) for v in frame.astype("float64").tolist()],
+    }
+
+
 def build(symbol: str, rng: str, start=None, end=None, language: str = "de") -> dict:
     window_start, window_end, start_ts = _window_bounds(rng, start, end)
 

@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v={{ asset_version }}">
 <link rel="stylesheet" href="/static/style.css?v={{ asset_version }}">
 </head>
-<body>
+<body data-portfolio="{{ 1 if can_portfolio else 0 }}" data-portfolio-edit="{{ 1 if can_portfolio_edit else 0 }}">
 <header class="topbar">
   <div class="brand">{{ brand[0] }}<span>{{ brand[1] }}</span></div>
 
@@ -53,6 +53,8 @@
          script -- which the Content-Security-Policy has no reason to allow. -->
     <a class="ghost lang-switch" href="/lang/{{ 'en' if lang == 'de' else 'de' }}"
        title="{{ t('index.language') }}">{{ 'EN' if lang == 'de' else 'DE' }}</a>
+    {% if is_admin %}<a class="ghost lang-switch" href="/admin"
+       title="{{ t('index.admin') }}">{{ t("index.admin") }}</a>{% endif %}
     <span class="user">{{ username }}</span>
     <button type="submit" class="ghost">{{ t("index.logout") }}</button>
   </form>
@@ -67,7 +69,22 @@
   <span id="q-name" class="muted"></span>
   <span id="q-last" class="last"></span>
   <span id="q-change" class="change"></span>
+  <span id="q-beta" class="beta muted" hidden></span>
+  <span id="q-fcf" class="beta muted" hidden></span>
   <span id="q-cache" class="badge" hidden></span>
+  <form id="cmp-form" class="cmp-form">
+    <input id="cmp-symbol" type="text" placeholder="{{ t('index.compare_placeholder') }}"
+           autocomplete="off" autocapitalize="characters" spellcheck="false"
+           maxlength="20" aria-label="{{ t('index.compare_aria') }}">
+    <button type="submit" class="ghost">{{ t("index.compare_button") }}</button>
+  </form>
+  <span id="cmp-chip" class="cmp-chip" hidden>
+    <span class="cmp-swatch" aria-hidden="true"></span>
+    <span id="cmp-label"></span>
+    <button type="button" id="cmp-clear" class="ghost"
+            title="{{ t('index.compare_remove') }}"
+            aria-label="{{ t('index.compare_remove') }}">×</button>
+  </span>
 </section>
 
 <div class="tabbar">
@@ -75,6 +92,7 @@
     <button type="button" data-tab="daily" class="active"><span class="label-long">{{ t("index.tab_daily") }}</span><span class="label-short">{{ t("index.tab_daily_short") }}</span></button>
     <button type="button" data-tab="weekly"><span class="label-long">{{ t("index.tab_weekly") }}</span><span class="label-short">{{ t("index.tab_weekly_short") }}</span></button>
     <button type="button" data-tab="monthly"><span class="label-long">{{ t("index.tab_monthly") }}</span><span class="label-short">{{ t("index.tab_monthly_short") }}</span></button>
+    {% if can_portfolio %}<button type="button" data-tab="portfolio"><span class="label-long">{{ t("index.tab_portfolio") }}</span><span class="label-short">{{ t("index.tab_portfolio_short") }}</span></button>{% endif %}
   </nav>
   <button type="button" id="toggle-panels" class="ghost"
           aria-expanded="false" aria-controls="panel-config"><span class="label-long">{{ t("index.panels_toggle") }}</span><span class="label-short">{{ t("index.panels_toggle_short") }}</span></button>
@@ -97,9 +115,60 @@
     </div>
     <div id="chart-weekly" class="chart-weekly" hidden></div>
     <div id="chart-monthly" class="chart-weekly" hidden></div>
+
+
+    <section id="portfolio" class="portfolio" hidden>
+      <div id="pf-status" class="status" hidden></div>
+      <div class="kpi-cards" id="pf-cards"></div>
+      <ul class="pf-warnings" id="pf-warnings"></ul>
+
+      <h3>{{ t("pf.heading_positions") }} <span id="pf-pos-count" class="muted"></span></h3>
+      <div class="table-wrap">
+        <table class="data-table pf-table" id="pf-positions"></table>
+      </div>
+
+      <h3>{{ t("pf.heading_realized") }} <span id="pf-real-count" class="muted"></span></h3>
+      <div class="table-wrap">
+        <table class="data-table pf-table" id="pf-realized"></table>
+      </div>
+
+      {% if can_portfolio_edit %}
+      <h3>{{ t("pf.heading_add") }}</h3>
+      <form id="pf-form" class="pf-form">
+        <label for="pf-text">{{ t("pf.paste_label") }}</label>
+        <textarea id="pf-text" rows="5" maxlength="20000" spellcheck="false"
+                  placeholder="{{ t('pf.paste_placeholder') }}"></textarea>
+        <div class="pf-form-row">
+          <label for="pf-date">{{ t("pf.post_date") }}</label>
+          <input type="date" id="pf-date">
+          <button type="submit">{{ t("pf.parse") }}</button>
+          <button type="button" id="pf-add-row" class="ghost">{{ t("pf.add_row") }}</button>
+        </div>
+      </form>
+      <p class="hint" id="pf-unparsed" hidden></p>
+      <div class="table-wrap">
+        <table class="data-table pf-draft" id="pf-draft"></table>
+      </div>
+      <button type="button" id="pf-save" class="pf-save" hidden>{{ t("pf.save") }}</button>
+      <p class="hint">{{ t("pf.add_hint") }}</p>
+
+      {% endif %}
+
+      <h3 class="pf-journal">{{ t("pf.heading_journal") }} <span id="pf-journal-count" class="muted"></span></h3>
+      <div class="table-wrap">
+        <table class="data-table pf-table" id="pf-journal"></table>
+      </div>
+      <p class="hint">{{ t("pf.disclaimer") }}</p>
+    </section>
   </div>
 
   <aside class="sidebar">
+    <section class="card notices" id="notices-card" hidden>
+      <h3>{{ t("index.signals_notice") }} <span id="notice-count" class="muted"></span></h3>
+      <ul id="notice-list" class="notice-list"></ul>
+      <p class="hint" id="notice-hint"></p>
+    </section>
+
     <section class="card favorites">
       <h3>{{ t("index.favorites") }} <span id="fav-count" class="muted"></span></h3>
       <ul id="fav-list" class="fav-list"></ul>

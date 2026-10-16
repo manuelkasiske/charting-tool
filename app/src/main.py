@@ -2,7 +2,7 @@
 
 Started in the container via uvicorn (see Dockerfile). Create a user with:
 
-    docker compose exec chart python -m src.cli adduser robert
+    docker compose exec chart python -m src.cli adduser NAME
 
 The code is English throughout; the interface is German by default and can be
 switched to English (see i18n.py and /lang below). Everything a visitor gets
@@ -24,7 +24,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import audit, auth, config, db, i18n, series, yahoo
+from . import audit, auth, beta, config, db, fundamentals, i18n, portfolio, notices, series, yahoo
 
 logging.basicConfig(
     level=logging.INFO,
@@ -66,7 +66,7 @@ def _asset_version() -> str:
     the "Anzeigen" button was dropped.
     """
     newest = 0.0
-    for name in ("static/app.js", "static/style.css", "static/favicon.png",
+    for name in ("static/app.js", "static/admin.js", "static/style.css", "static/favicon.png",
                  "static/favicon.ico", "static/apple-touch-icon.png"):
         try:
             newest = max(newest, os.path.getmtime(name))
@@ -81,6 +81,25 @@ db.init()
 db.migrate()
 db.cleanup()
 audit.init()
+
+
+def _backfill_last_login() -> None:
+    """users.last_login from the access logs, for sign-ins made before the
+    column existed (2026-10-16). Only ever moves a value forward; from then
+    on auth.verify() keeps it current itself."""
+    try:
+        latest = audit.last_logins()
+    except Exception:
+        log.exception("Reading the last sign-ins from the access log failed")
+        return
+    with db.cursor() as conn:
+        conn.executemany(
+            "UPDATE users SET last_login = ? WHERE username = ? "
+            "AND (last_login IS NULL OR last_login < ?)",
+            [(ts, name, ts) for name, ts in latest.items()])
+
+
+_backfill_last_login()
 
 
 def _cleanup_loop() -> None:
@@ -159,7 +178,44 @@ def require_user(request: Request):
             status_code=401,
             detail=i18n.translate(i18n.from_request(request), "error.not_signed_in"),
         )
+    # Signed in but in no group: the session may predate a change in the
+    # user management. Nothing is shown.
+    if not auth.can(user, "app"):
+        raise HTTPException(
+            status_code=403,
+            detail=i18n.translate(i18n.from_request(request), "error.no_access"),
+        )
     return user
+
+
+def require(permission: str):
+    """Dependency: a signed-in user who also holds `permission`."""
+    def check(request: Request, user=Depends(require_user)):
+        if not auth.can(user, permission):
+            raise HTTPException(
+                status_code=403,
+                detail=i18n.translate(i18n.from_request(request), "error.forbidden"),
+            )
+        return user
+    return check
+
+
+def require_write(permission: str):
+    """As require(), for requests that change something.
+
+    The session cookie is SameSite=Strict, which already keeps foreign pages
+    from sending it along. On top of that every changing call has to carry
+    X-Requested-With -- a header a foreign page cannot set without a CORS
+    preflight, which this app never answers.
+    """
+    def check(request: Request, user=Depends(require(permission))):
+        if request.headers.get("x-requested-with") != "chart":
+            raise HTTPException(
+                status_code=403,
+                detail=i18n.translate(i18n.from_request(request), "error.forbidden"),
+            )
+        return user
+    return check
 
 
 # --- Language -------------------------------------------------------------
@@ -277,6 +333,10 @@ def login_submit(
     if user_id is None:
         audit.event("FAILED", username, ip, "wrong name or password")
         return fail(t("error.bad_credentials"))
+    if not auth.groups_of(user_id):
+        # The password was right, so saying why is no leak.
+        audit.event("FAILED", username, ip, "no group")
+        return fail(t("error.no_access"), 403)
 
     token, ttl = auth.start_session(
         user_id, remember == "on", ip, request.headers.get("user-agent", "")
@@ -322,11 +382,25 @@ def index(request: Request):
     if user is None:
         return RedirectResponse("/login", status_code=303)
     language = i18n.from_request(request)
+    if not auth.can(user, "app"):
+        return _no_access(request, user, language)
     return templates.TemplateResponse(
         request, "index.html",
         {"username": user["username"], "asset_version": ASSET_VERSION,
          "lang": language, "t": i18n.translator(language),
-         "brand": brand_parts()})
+         "brand": brand_parts(),
+         "can_portfolio": auth.can(user, "portfolio_view"),
+         "can_portfolio_edit": auth.can(user, "portfolio_edit"),
+         "is_admin": auth.can(user, "admin")})
+
+
+def _no_access(request: Request, user: dict, language: str):
+    """Signed in, but in no group (any more): end the session, back to sign-in."""
+    auth.end_session(request.cookies.get(auth.SESSION_COOKIE))
+    audit.event("LOGOUT", user["username"], client_ip(request), "no group")
+    response = RedirectResponse("/login", status_code=303)
+    response.delete_cookie(auth.SESSION_COOKIE, path="/")
+    return response
 
 
 # --- API ------------------------------------------------------------------
@@ -386,6 +460,8 @@ def api_chart(
         detail = t(exc.key, **exc.params) if exc.key else str(exc)
         raise HTTPException(status_code=code, detail=detail) from exc
 
+    data["beta"] = beta.get(symbol)
+
     # The number of fetches goes into the log as well: it shows whether the
     # request came from our own store (0) or whether Yahoo had to be asked.
     fetch = data.get("fetch", {})
@@ -395,6 +471,36 @@ def api_chart(
         f"{fetch.get('requests', 0)} Yahoo request(s)",
     )
     return data
+
+
+@app.get("/api/closes")
+def api_closes(
+    request: Request,
+    symbol: str = Query(..., min_length=1, max_length=20),
+    range: str = Query("1y"),
+    start: str | None = Query(None, max_length=10),
+    end: str | None = Query(None, max_length=10),
+    user=Depends(require_user),
+):
+    """Daily closes of a second symbol, to lay over the chart for comparison."""
+    t = i18n.translator(i18n.from_request(request))
+    symbol = symbol.strip().upper()
+    if not yahoo.valid_symbol(symbol):
+        raise HTTPException(status_code=400, detail=t("error.invalid_symbol"))
+    try:
+        return series.closes(symbol, range, _parse_date(start, "start", t),
+                             _parse_date(end, "end", t))
+    except yahoo.YahooError as exc:
+        code = 400 if isinstance(exc, yahoo.EmptyRange) else 502
+        detail = t(exc.key, **exc.params) if exc.key else str(exc)
+        raise HTTPException(status_code=code, detail=detail) from exc
+
+
+@app.get("/api/fundamentals")
+def api_fundamentals(symbol: str = Query(..., min_length=1, max_length=20),
+                     user=Depends(require_user)):
+    """Free cash flow of a symbol. Its own call, so the chart does not wait."""
+    return {"fcf": fundamentals.free_cash_flow(symbol.strip().upper())}
 
 
 @app.get("/api/search")
@@ -558,6 +664,340 @@ def api_watchlist_del(symbol: str, user=Depends(require_user)):
             "DELETE FROM watchlist WHERE user_id = ? AND symbol = ?",
             (user["user_id"], symbol.strip().upper()),
         )
+    return {"ok": True}
+
+
+# --- Signals --------------------------------------------------------------
+
+def _held_symbols(user_id: int) -> set[str]:
+    with db.cursor() as conn:
+        rows = conn.execute(
+            "SELECT symbol FROM positions WHERE user_id = ?", (user_id,)
+        ).fetchall()
+    return {r["symbol"] for r in rows}
+
+
+@app.get("/api/signals")
+def api_signals(user=Depends(require_user)):
+    """Where each favorite stands today -- the source of the notices."""
+    with db.cursor() as conn:
+        rows = conn.execute(
+            "SELECT symbol, label FROM watchlist WHERE user_id = ? ORDER BY sort, symbol",
+            (user["user_id"],),
+        ).fetchall()
+    held = _held_symbols(user["user_id"])
+
+    items = []
+    for row in rows:
+        try:
+            signal = notices.current_signal(row["symbol"], holding=row["symbol"] in held)
+        except yahoo.YahooError as exc:
+            # One unavailable symbol must not take the whole list down.
+            log.warning("Signal for %s not available: %s", row["symbol"], exc)
+            continue
+        if signal:
+            signal["label"] = row["label"] or ""
+            items.append(signal)
+    return {"items": items}
+
+
+@app.get("/api/positions")
+def api_positions_get(user=Depends(require_user)):
+    with db.cursor() as conn:
+        rows = conn.execute(
+            "SELECT symbol, bought_at, price, stake FROM positions "
+            "WHERE user_id = ? ORDER BY symbol",
+            (user["user_id"],),
+        ).fetchall()
+    return {"items": [dict(r) for r in rows]}
+
+
+@app.post("/api/positions")
+def api_positions_add(
+    request: Request,
+    symbol: str = Form(...),
+    price: float | None = Form(None),
+    stake: float | None = Form(None),
+    user=Depends(require_user),
+):
+    """Mark an instrument as held, so that it gets sell notices instead of buy ones."""
+    t = i18n.translator(i18n.from_request(request))
+    symbol = symbol.strip().upper()
+    if not yahoo.valid_symbol(symbol):
+        raise HTTPException(status_code=400, detail=t("error.invalid_symbol"))
+    with db.cursor() as conn:
+        conn.execute(
+            "INSERT INTO positions (user_id, symbol, bought_at, price, stake) "
+            "VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id, symbol) DO UPDATE SET "
+            "bought_at = excluded.bought_at, price = excluded.price, stake = excluded.stake",
+            (user["user_id"], symbol, int(time.time()), price, stake),
+        )
+    return {"ok": True}
+
+
+@app.delete("/api/positions/{symbol}")
+def api_positions_del(symbol: str, user=Depends(require_user)):
+    with db.cursor() as conn:
+        conn.execute(
+            "DELETE FROM positions WHERE user_id = ? AND symbol = ?",
+            (user["user_id"], symbol.strip().upper()),
+        )
+    return {"ok": True}
+
+
+# --- Portfolio Tracker --------------------------------------------------------
+
+PF_MAX_ROWS = 200
+PF_FIRST_DATE = datetime.date(2000, 1, 1)
+
+
+def _pf_rows(symbol: str | None = None) -> list[dict]:
+    """The journal. Shared since the groups (2026-10-16): there is one
+    tracked portfolio, entered by an admin and read by the "portfolio"
+    group. user_id stays as the author of an entry."""
+    query = "SELECT id, symbol, side, trade_date, shares, price, note FROM portfolio_trades"
+    params: list = []
+    if symbol:
+        query += " WHERE symbol = ?"
+        params.append(symbol)
+    with db.cursor() as conn:
+        return [dict(r) for r in conn.execute(query, params).fetchall()]
+
+
+def _pf_clean(entry, t) -> tuple:
+    """One trade from the browser, checked; raises 400 naming what is wrong."""
+    if not isinstance(entry, dict):
+        raise HTTPException(status_code=400, detail=t("error.pf_invalid"))
+    symbol = str(entry.get("symbol") or "").strip().upper().lstrip("$")
+    if not yahoo.valid_symbol(symbol):
+        raise HTTPException(status_code=400, detail=t("error.invalid_symbol"))
+    side = entry.get("side")
+    if side not in portfolio.SIDES:
+        raise HTTPException(status_code=400, detail=t("error.pf_invalid"))
+    day = _parse_date(str(entry.get("date") or ""), "date", t)
+    if day is None or day < PF_FIRST_DATE or day > datetime.date.today():
+        raise HTTPException(status_code=400, detail=t("error.pf_date", symbol=symbol))
+
+    def number(name):
+        value = entry.get(name)
+        if value in (None, ""):
+            return None
+        try:
+            value = float(value)
+        except (TypeError, ValueError):
+            value = -1
+        if not (0 < value < 1e9):
+            raise HTTPException(status_code=400,
+                                detail=t("error.pf_number", field=t("field." + name), symbol=symbol))
+        return value
+
+    shares, price = number("shares"), number("price")
+    # Only a sell may leave the count open (= the whole position).
+    if shares is None and side == "buy":
+        raise HTTPException(status_code=400, detail=t("error.pf_shares", symbol=symbol))
+    note = str(entry.get("note") or "")[:200]
+    return symbol, side, day.isoformat(), shares, price, note
+
+
+@app.get("/api/portfolio")
+def api_portfolio(user=Depends(require("portfolio_view"))):
+    """Open positions with today's prices, realized results, the journal."""
+    return portfolio.summary(_pf_rows())
+
+
+@app.get("/api/portfolio/symbol/{symbol}")
+def api_pf_symbol(symbol: str, user=Depends(require("portfolio_view"))):
+    """Trades and the open position of one symbol -- the marks in the chart.
+
+    Without today's price: the chart has its own, and the call stays free of
+    requests to Yahoo unless a trade lacks a price.
+    """
+    symbol = symbol.strip().upper()
+    if not yahoo.valid_symbol(symbol):
+        return {"trades": [], "position": None}
+    book = portfolio.ledger(_pf_rows(symbol))
+    return {"trades": book["trades"],
+            "position": book["positions"][0] if book["positions"] else None}
+
+
+@app.post("/api/portfolio/trades")
+def api_pf_add(
+    request: Request,
+    trades: list = Body(..., embed=True),
+    user=Depends(require_write("portfolio_edit")),
+):
+    t = i18n.translator(i18n.from_request(request))
+    if not trades or len(trades) > PF_MAX_ROWS:
+        raise HTTPException(status_code=400, detail=t("error.pf_invalid"))
+    cleaned = [_pf_clean(entry, t) for entry in trades]
+    now = int(time.time())
+    with db.cursor() as conn:
+        conn.executemany(
+            "INSERT INTO portfolio_trades (user_id, symbol, side, trade_date, shares, price, "
+            "note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [(user["user_id"], *row, now) for row in cleaned],
+        )
+    audit.event("PF_ADD", user["username"], client_ip(request),
+                ", ".join(f"{r[1]} {r[0]}" for r in cleaned)[:200])
+    return {"ok": True, "count": len(cleaned)}
+
+
+@app.post("/api/portfolio/parse")
+def api_pf_parse(text: str = Body(..., embed=True, max_length=20_000),
+                 user=Depends(require("portfolio_edit"))):
+    """Reads the trades out of a pasted post -- a proposal, nothing is saved."""
+    return portfolio.parse_post(text)
+
+
+@app.delete("/api/portfolio/trades/{trade_id}")
+def api_pf_del(trade_id: int, request: Request, user=Depends(require_write("portfolio_edit"))):
+    with db.cursor() as conn:
+        conn.execute("DELETE FROM portfolio_trades WHERE id = ?", (trade_id,))
+    audit.event("PF_DEL", user["username"], client_ip(request), str(trade_id))
+    return {"ok": True}
+
+
+# --- User management -----------------------------------------------------
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_page(request: Request):
+    user = current_user(request)
+    if user is None:
+        return RedirectResponse("/login", status_code=303)
+    if not auth.can(user, "admin"):
+        return RedirectResponse("/", status_code=303)
+    language = i18n.from_request(request)
+    t = i18n.translator(language)
+    return templates.TemplateResponse(
+        request, "admin.html",
+        {"username": user["username"], "asset_version": ASSET_VERSION,
+         "lang": language, "t": t, "brand": brand_parts(),
+         "groups": auth.GROUPS,
+         # The texts admin.js draws, as a JSON data block: no inline script,
+         # which the Content-Security-Policy would refuse anyway.
+         # "</" escaped, so no text can ever close the <script> block early.
+         "texts": json.dumps({k: v for k, v in i18n.TEXTS[language].items()
+                              if k.startswith(("admin.", "group."))}).replace("</", "<\\/")})
+
+
+def _admin_user(user_id: int, t) -> dict:
+    with db.cursor() as conn:
+        row = conn.execute("SELECT id, username FROM users WHERE id = ?", (user_id,)).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail=t("error.user_unknown"))
+    return dict(row)
+
+
+def _clean_groups(groups, t) -> list[str]:
+    if not isinstance(groups, list) or any(g not in auth.GROUPS for g in groups):
+        raise HTTPException(status_code=400, detail=t("error.group_unknown"))
+    return [g for g in auth.GROUPS if g in groups]
+
+
+def _check_password(password, t) -> str:
+    if not isinstance(password, str) or not (auth.MIN_PASSWORD <= len(password) <= auth.MAX_PASSWORD):
+        raise HTTPException(status_code=400,
+                            detail=t("error.password_length", min=auth.MIN_PASSWORD))
+    return password
+
+
+def _admins_left(without: int) -> int:
+    with db.cursor() as conn:
+        return conn.execute(
+            "SELECT COUNT(*) AS n FROM user_groups WHERE grp = 'admin' AND user_id != ?",
+            (without,)).fetchone()["n"]
+
+
+@app.get("/api/admin/users")
+def api_admin_users(user=Depends(require("admin"))):
+    now = int(time.time())
+    with db.cursor() as conn:
+        rows = conn.execute(
+            "SELECT u.id, u.username, u.created_at, u.last_login, "
+            "(SELECT COUNT(*) FROM sessions s WHERE s.user_id = u.id AND s.expires_at > ?) "
+            "AS sessions FROM users u ORDER BY u.username", (now,)).fetchall()
+    return {"me": user["user_id"],
+            "users": [dict(r, groups=auth.groups_of(r["id"])) for r in rows]}
+
+
+@app.post("/api/admin/users")
+def api_admin_create(request: Request, body: dict = Body(...),
+                     user=Depends(require_write("admin"))):
+    t = i18n.translator(i18n.from_request(request))
+    username = str(body.get("username") or "").strip().lower()
+    if not auth.USERNAME_RE.match(username):
+        raise HTTPException(status_code=400, detail=t("error.username_invalid"))
+    password = _check_password(body.get("password"), t)
+    groups = _clean_groups(body.get("groups") or [], t)
+    if not groups:
+        raise HTTPException(status_code=400, detail=t("error.group_none"))
+    with db.cursor() as conn:
+        if conn.execute("SELECT 1 FROM users WHERE username = ?", (username,)).fetchone():
+            raise HTTPException(status_code=400, detail=t("error.username_taken"))
+    auth.create_user(username, password)
+    with db.cursor() as conn:
+        new_id = conn.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()["id"]
+    auth.set_groups(new_id, groups)
+    audit.event("ADMIN", user["username"], client_ip(request),
+                f"created {username} ({', '.join(groups)})")
+    return {"ok": True}
+
+
+@app.put("/api/admin/users/{user_id}/groups")
+def api_admin_groups(user_id: int, request: Request, groups: list = Body(..., embed=True),
+                     user=Depends(require_write("admin"))):
+    t = i18n.translator(i18n.from_request(request))
+    target = _admin_user(user_id, t)
+    groups = _clean_groups(groups, t)
+    # Nobody takes the admin group away from themselves, and the last admin
+    # stays one -- otherwise only the shell (cli groups) would get back in.
+    if "admin" not in groups and (user_id == user["user_id"] or not _admins_left(user_id)):
+        raise HTTPException(status_code=400, detail=t("error.admin_keep"))
+    auth.set_groups(user_id, groups)
+    if not groups:
+        # Without a group there is nothing to see; end what is still open.
+        auth.end_sessions_of(user_id)
+    audit.event("ADMIN", user["username"], client_ip(request),
+                f"groups of {target['username']}: {', '.join(groups) or '-'}")
+    return {"ok": True}
+
+
+@app.put("/api/admin/users/{user_id}/password")
+def api_admin_password(user_id: int, request: Request, password: str = Body(..., embed=True),
+                       user=Depends(require_write("admin"))):
+    t = i18n.translator(i18n.from_request(request))
+    target = _admin_user(user_id, t)
+    # create_user() on an existing name sets the password and ends all of
+    # that user's sessions (see there).
+    auth.create_user(target["username"], _check_password(password, t))
+    audit.event("ADMIN", user["username"], client_ip(request),
+                f"password of {target['username']} set")
+    return {"ok": True}
+
+
+@app.delete("/api/admin/users/{user_id}/sessions")
+def api_admin_sessions(user_id: int, request: Request, user=Depends(require_write("admin"))):
+    t = i18n.translator(i18n.from_request(request))
+    target = _admin_user(user_id, t)
+    ended = auth.end_sessions_of(user_id)
+    audit.event("ADMIN", user["username"], client_ip(request),
+                f"{ended} session(s) of {target['username']} ended")
+    return {"ok": True, "ended": ended}
+
+
+@app.delete("/api/admin/users/{user_id}")
+def api_admin_delete(user_id: int, request: Request, user=Depends(require_write("admin"))):
+    t = i18n.translator(i18n.from_request(request))
+    target = _admin_user(user_id, t)
+    if user_id == user["user_id"]:
+        raise HTTPException(status_code=400, detail=t("error.delete_self"))
+    with db.cursor() as conn:
+        # The portfolio journal is shared; its entries outlive their
+        # author and are handed to whoever deletes the account.
+        conn.execute("UPDATE portfolio_trades SET user_id = ? WHERE user_id = ?",
+                     (user["user_id"], user_id))
+        conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    audit.event("ADMIN", user["username"], client_ip(request), f"deleted {target['username']}")
     return {"ok": True}
 
 

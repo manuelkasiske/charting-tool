@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{{ t("admin.title") }} &middot; Chart</title>
+<link rel="icon" href="/static/favicon.png?v={{ asset_version }}" type="image/png" sizes="32x32">
+<link rel="alternate icon" href="/static/favicon.ico?v={{ asset_version }}" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v={{ asset_version }}">
+<link rel="stylesheet" href="/static/style.css?v={{ asset_version }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">{{ brand[0] }}<span>{{ brand[1] }}</span></div>
+  <form method="post" action="/logout" class="logout">
+    <a class="ghost lang-switch" href="/">{{ t("admin.back") }}</a>
+    <a class="ghost lang-switch" href="/lang/{{ 'en' if lang == 'de' else 'de' }}"
+       title="{{ t('index.language') }}">{{ 'EN' if lang == 'de' else 'DE' }}</a>
+    <span class="user">{{ username }}</span>
+    <button type="submit" class="ghost">{{ t("index.logout") }}</button>
+  </form>
+</header>
+
+<main class="admin">
+  <h2>{{ t("admin.title") }}</h2>
+  <div id="adm-status" class="status" hidden></div>
+
+  <div class="table-wrap">
+    <table class="data-table adm-table" id="adm-users"></table>
+  </div>
+
+  <h3>{{ t("admin.heading_new") }}</h3>
+  <form id="adm-create" class="pf-form adm-create" autocomplete="off">
+    <div class="pf-form-row">
+      <label for="adm-username">{{ t("admin.username") }}</label>
+      <input id="adm-username" type="text" required maxlength="32"
+             autocapitalize="none" spellcheck="false" autocomplete="off">
+      <label for="adm-password">{{ t("admin.password") }}</label>
+      <input id="adm-password" type="password" required minlength="12" maxlength="200"
+             autocomplete="new-password" placeholder="{{ t('admin.password_placeholder') }}">
+    </div>
+    <div class="pf-form-row">
+      <span class="adm-label">{{ t("admin.groups") }}</span>
+      {% for g in groups %}
+      <label class="adm-check"><input type="checkbox" name="group" value="{{ g }}"
+             {% if g == 'general' %}checked{% endif %}> {{ t("group." + g) }}</label>
+      {% endfor %}
+      <button type="submit">{{ t("admin.create") }}</button>
+    </div>
+  </form>
+
+  <h3>{{ t("admin.heading_groups") }}</h3>
+  <dl class="adm-groups">
+    {% for g in groups %}
+    <dt>{{ t("group." + g) }}</dt><dd>{{ t("group." + g + "_desc") }}</dd>
+    {% endfor %}
+  </dl>
+  <p class="hint">{{ t("admin.hint") }}</p>
+</main>
+
+<script type="application/json" id="adm-texts">{{ texts|safe }}</script>
+<script src="/static/admin.js?v={{ asset_version }}"></script>
+</body>
+</html>

@@ -9,8 +9,8 @@ later.
 One line per event, fixed columns, so that "tail -f" and "grep CHART" stay
 readable without further tooling:
 
-    2026-09-06 15:18:03 +0200  LOGIN        robert  83.1.2.3  12 hours
-    2026-09-06 15:19:11 +0200  CHART        robert  83.1.2.3  AAPL  1y  248 days, 1 request
+    2026-09-06 15:18:03 +0200  LOGIN        alice   83.1.2.3  12 hours
+    2026-09-06 15:19:11 +0200  CHART        alice   83.1.2.3  AAPL  1y  248 days, 1 request
     2026-09-06 15:31:02 +0200  FAILED       admin   45.9.8.7  wrong password
 
 The log is English regardless of the language chosen for the interface: it is
@@ -104,3 +104,39 @@ def event(kind: str, user: str, ip: str, detail: str = "") -> None:
         log.info(line.rstrip())
     except Exception:  # full disk, revoked permissions, ...
         logging.getLogger("chart").exception("Access log not written")
+
+
+# Sign-in lines: "LOGIN" since 2026-09-09, "ANMELDUNG" in the German log
+# (zugriff.log) that came before.
+_SIGN_IN = ("LOGIN", "ANMELDUNG")
+_OLD_LOG = "zugriff.log"
+
+
+def last_logins() -> dict[str, int]:
+    """Latest sign-in per username, read back from the access logs.
+
+    Covers the current log, its rotated parts (access.log.1 ...) and the old
+    German one, so users.last_login is known from before the column existed.
+    Lines that do not parse are skipped -- a damaged line must not keep the
+    application from starting.
+    """
+    names = [config.LOG_FILE.name, _OLD_LOG]
+    files = [p for name in names for p in config.DATA_DIR.glob(name + "*") if p.is_file()]
+    latest: dict[str, int] = {}
+    for path in files:
+        try:
+            lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            parts = line.split()
+            if len(parts) < 5 or parts[3] not in _SIGN_IN:
+                continue
+            try:
+                moment = datetime.datetime.strptime(" ".join(parts[:3]), "%Y-%m-%d %H:%M:%S %z")
+            except ValueError:
+                continue
+            ts = int(moment.timestamp())
+            if ts > latest.get(parts[4], 0):
+                latest[parts[4]] = ts
+    return latest

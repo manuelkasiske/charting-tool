@@ -107,11 +107,87 @@ const TEXTS = {
     "panels.move_up": "nach oben",
     "panels.move_down": "nach unten",
 
+    "notice.state_buy": "Kaufsignal",
+    "notice.state_sell": "Verkaufssignal",
+    "notice.state_overbought": "überkauft",
+    "notice.state_holding_low": "gehalten, RSI wieder tief",
+    "notice.none": "Zurzeit kein Signal bei deinen Favoriten.",
+    "notice.hint": "RSI-Schwellen 30 / 70 auf Tagesbasis.",
+    "notice.held_since": "gehalten seit {date}",
+    "notice.mark_bought": "Als gekauft merken",
+    "notice.mark_sold": "Als verkauft merken",
     "volume.billion": "Mrd.",
     "volume.million": "Mio.",
     "volume.thousand": "Tsd.",
     "volume.billion_short": "Mrd",
     "volume.million_short": "M",
+    "pf.card_invested": "Eingesetzt",
+    "pf.card_unrealized": "Offene Positionen",
+    "pf.card_realized": "Realisiert",
+    "pf.card_total": "Gesamt",
+    "fcf.label": "FCF {value}",
+    "fcf.title": "Free Cashflow der letzten 12 Monate bis {date}",
+    "fcf.title_parts": "operativer Cashflow {operating} − Investitionen {capex}",
+    "fcf.title_change": "vor einem Jahr {previous} ({change})",
+    "fcf.title_years": "Geschäftsjahre: {years}",
+    "fcf.title_source": "Quelle: Yahoo Finance",
+    "compare.series": "{symbol} (Vergleich)",
+    "compare.label": "vs. {symbol}",
+    "compare.same": "Das ist bereits der angezeigte Wert.",
+    "pf.card_irr": "IZF p. a.",
+    "pf.card_ttwror": "TTWROR",
+    "pf.note_ttwror": "zeitgewichtet · {pa} p. a.",
+    "pf.note_irr": "seit {since} ({days} Tage): {period}",
+    "pf.card_day": "Heute",
+    "pf.note_value": "Wert {value}",
+    "pf.note_positions": "{count} Positionen",
+    "pf.note_closed": "{count} Verkäufe",
+    "pf.note_missing": "{count} ohne Kurs",
+    "pf.col_symbol": "Ticker",
+    "pf.col_shares": "Stück",
+    "pf.col_avg": "Ø Kauf",
+    "pf.col_last": "Kurs",
+    "pf.col_day": "Heute",
+    "pf.col_invested": "Einsatz",
+    "pf.col_value": "Wert",
+    "pf.col_proceeds": "Erlös",
+    "pf.col_beta": "Beta",
+    "quote.beta": "Beta {value}",
+    "beta.title_1mo": "Beta gegen den S&P 500 aus {count} Monatsrenditen (wie bei Yahoo: 5 Jahre, abgeschlossene Monate)",
+    "beta.title_1wk": "Beta gegen den S&P 500 aus {count} Wochenrenditen – für zwei Jahre Monatswerte ist die Notierung zu jung",
+    "beta.title_none": "Kein Beta: zu wenig Kursgeschichte",
+    "beta.title_short": " – kurze Kursgeschichte, der Wert ist unsicher",
+    "beta.title_depot": "Nach Positionswert gewichtetes Beta der offenen Positionen",
+    "pf.col_result": "Ergebnis",
+    "pf.col_weight": "Anteil",
+    "pf.col_since": "Seit",
+    "pf.col_date": "Datum",
+    "pf.col_side": "Art",
+    "pf.col_price": "Kurs",
+    "pf.col_sell": "Verkauf",
+    "pf.col_note": "Notiz",
+    "pf.buy": "Kauf",
+    "pf.sell": "Verkauf",
+    "pf.all": "alle",
+    "pf.estimated": "geschätzt",
+    "pf.sum": "Summe",
+    "pf.closed_estimated": "Enthält {count} Verkäufe mit geschätztem Kurs",
+    "pf.delete": "Löschen",
+    "pf.remove_row": "Zeile entfernen",
+    "pf.confirm_delete": "{side} {symbol} vom {date} löschen?",
+    "pf.none_open": "Keine offenen Positionen.",
+    "pf.none_closed": "Noch nichts verkauft.",
+    "pf.empty": "Noch keine Trades erfasst. Füge unten einen Post ein.",
+    "pf.unparsed": "Nicht erkannt, bitte von Hand ergänzen: {lines}",
+    "pf.parsed_none": "Im Text wurde kein Trade gefunden.",
+    "pf.saved": "{count} Trades gespeichert.",
+    "pf.loading": "Kurse werden geladen …",
+    "pf.warn_no_price": "{symbol} am {date}: kein Kurs gefunden, nicht verrechnet.",
+    "pf.warn_oversold": "{symbol} am {date}: {wanted} Stück verkauft, aber nur {owned} gehalten. Verrechnet wurde der Bestand.",
+    "pf.warn_not_held": "{symbol} am {date}: Verkauf ohne Bestand – fehlt der Kauf?",
+    "pf.mark_buy": "K",
+    "pf.mark_sell": "V",
+    "pf.avg_line": "Portfolio Ø {price}",
     "volume.thousand_short": "T",
   },
   en: {
@@ -202,11 +278,87 @@ const TEXTS = {
     "panels.move_up": "move up",
     "panels.move_down": "move down",
 
+    "notice.state_buy": "Buy signal",
+    "notice.state_sell": "Sell signal",
+    "notice.state_overbought": "overbought",
+    "notice.state_holding_low": "held, RSI low again",
+    "notice.none": "No signal on your favorites right now.",
+    "notice.hint": "RSI thresholds 30 / 70 on daily closes.",
+    "notice.held_since": "held since {date}",
+    "notice.mark_bought": "Mark as bought",
+    "notice.mark_sold": "Mark as sold",
     "volume.billion": "bn",
     "volume.million": "M",
     "volume.thousand": "k",
     "volume.billion_short": "bn",
     "volume.million_short": "M",
+    "pf.card_invested": "Invested",
+    "pf.card_unrealized": "Open positions",
+    "pf.card_realized": "Realized",
+    "pf.card_total": "Total",
+    "fcf.label": "FCF {value}",
+    "fcf.title": "Free cash flow of the last 12 months to {date}",
+    "fcf.title_parts": "operating cash flow {operating} − capital expenditure {capex}",
+    "fcf.title_change": "a year earlier {previous} ({change})",
+    "fcf.title_years": "Fiscal years: {years}",
+    "fcf.title_source": "Source: Yahoo Finance",
+    "compare.series": "{symbol} (comparison)",
+    "compare.label": "vs. {symbol}",
+    "compare.same": "That is the instrument already shown.",
+    "pf.card_irr": "IRR p.a.",
+    "pf.card_ttwror": "TTWROR",
+    "pf.note_ttwror": "time-weighted · {pa} p.a.",
+    "pf.note_irr": "since {since} ({days} days): {period}",
+    "pf.card_day": "Today",
+    "pf.note_value": "Worth {value}",
+    "pf.note_positions": "{count} positions",
+    "pf.note_closed": "{count} sells",
+    "pf.note_missing": "{count} without a price",
+    "pf.col_symbol": "Ticker",
+    "pf.col_shares": "Shares",
+    "pf.col_avg": "Avg cost",
+    "pf.col_last": "Price",
+    "pf.col_day": "Today",
+    "pf.col_invested": "Invested",
+    "pf.col_value": "Value",
+    "pf.col_proceeds": "Proceeds",
+    "pf.col_beta": "Beta",
+    "quote.beta": "Beta {value}",
+    "beta.title_1mo": "Beta against the S&P 500 from {count} monthly returns (as at Yahoo: 5 years, completed months)",
+    "beta.title_1wk": "Beta against the S&P 500 from {count} weekly returns – the listing is too young for two years of months",
+    "beta.title_none": "No beta: too little price history",
+    "beta.title_short": " – short price history, the figure is uncertain",
+    "beta.title_depot": "Beta of the open positions, weighted by position value",
+    "pf.col_result": "Result",
+    "pf.col_weight": "Weight",
+    "pf.col_since": "Since",
+    "pf.col_date": "Date",
+    "pf.col_side": "Side",
+    "pf.col_price": "Price",
+    "pf.col_sell": "Sell",
+    "pf.col_note": "Note",
+    "pf.buy": "Buy",
+    "pf.sell": "Sell",
+    "pf.all": "all",
+    "pf.estimated": "estimated",
+    "pf.sum": "Total",
+    "pf.closed_estimated": "Includes {count} sells at an estimated price",
+    "pf.delete": "Delete",
+    "pf.remove_row": "Remove row",
+    "pf.confirm_delete": "Delete {side} {symbol} of {date}?",
+    "pf.none_open": "No open positions.",
+    "pf.none_closed": "Nothing sold yet.",
+    "pf.empty": "No trades entered yet. Paste a post below.",
+    "pf.unparsed": "Not recognised, please add by hand: {lines}",
+    "pf.parsed_none": "No trade found in the text.",
+    "pf.saved": "{count} trades saved.",
+    "pf.loading": "Loading prices …",
+    "pf.warn_no_price": "{symbol} on {date}: no price found, not counted.",
+    "pf.warn_oversold": "{symbol} on {date}: {wanted} shares sold but only {owned} held. The holding was used.",
+    "pf.warn_not_held": "{symbol} on {date}: sell without a holding – is the buy missing?",
+    "pf.mark_buy": "B",
+    "pf.mark_sell": "S",
+    "pf.avg_line": "Portfolio avg {price}",
     "volume.thousand_short": "k",
   },
 };
@@ -278,7 +430,7 @@ function dotClasses(p) {
   return {
     [p.close]: "tt-s1", [p.sma50]: "tt-s2", [p.sma200]: "tt-s3",
     [p.ema50]: "tt-s4", [p.ema200]: "tt-s5", [p.vix]: "tt-s7",
-    [p.up]: "tt-up", [p.down]: "tt-down",
+    [p.up]: "tt-up", [p.down]: "tt-down", [p.text]: "tt-cmp",
   };
 }
 
@@ -300,6 +452,11 @@ const state = {
   end: null,
   // Order and visibility of the panels, loaded from the server.
   panels: [],
+  // The tracked portfolio's trades in the current symbol, for the marks in the chart.
+  pf: null,
+  // Second instrument laid over the price panel, and its closes.
+  compare: null,
+  cmp: null,
 };
 
 const el = (id) => document.getElementById(id);
@@ -358,8 +515,19 @@ function showStatus(message, isError) {
   box.style.borderLeftColor = isError ? palette().down : palette().sma50;
 }
 
+// What the signed-in user may see, as the server rendered it into <body>.
+// Only for showing and hiding: every call is checked again on the server.
+const PERMS = {
+  portfolio: document.body.dataset.portfolio === "1",
+  portfolioEdit: document.body.dataset.portfolioEdit === "1",
+};
+
 async function api(path, options) {
-  const response = await fetch(path, Object.assign({ credentials: "same-origin" }, options));
+  options = Object.assign({ credentials: "same-origin" }, options);
+  // Every changing call has to carry this header (main.require_write); a
+  // foreign page cannot set it without a CORS preflight.
+  options.headers = Object.assign({ "X-Requested-With": "chart" }, options.headers || {});
+  const response = await fetch(path, options);
   if (response.status === 401) {
     window.location.href = "/login";
     throw new Error(t("status.signed_out"));
@@ -780,11 +948,13 @@ function buildDailyOption(data) {
       label: { show: false },
     })));
 
+  const pfMarks = portfolioMarks(d, p);
   push("price", lineSeries(t("series.close"), g, d.close, p.close, Object.assign({
     lineStyle: { width: 2.4, color: p.close }, z: 8,
-    markLine: { symbol: "none", silent: true, animation: false, data: fibLines },
-    markPoint: { data: crossPoints, animation: false },
-  }, endLabel(p.close))));
+    markLine: { symbol: "none", silent: true, animation: false,
+                data: fibLines.concat(pfMarks.lines) },
+    markPoint: { data: crossPoints.concat(pfMarks.points), animation: false },
+  }, endLabel(p.close))), cmpBase(d));
   push("price", lineSeries("SMA 50", g, d.sma50, p.sma50,
     Object.assign({ lineStyle: { width: 1.6, color: p.sma50, type: "dashed" } }, endLabel(p.sma50))));
   push("price", lineSeries("SMA 200", g, d.sma200, p.sma200,
@@ -793,6 +963,17 @@ function buildDailyOption(data) {
     Object.assign({ lineStyle: { width: 1.6, color: p.ema50 } }, endLabel(p.ema50))));
   push("price", lineSeries("EMA 200", g, d.ema200, p.ema200,
     Object.assign({ lineStyle: { width: 1.6, color: p.ema200 } }, endLabel(p.ema200))));
+
+  // Comparison: the second instrument rescaled so that both start at the same
+  // point on the first day they share. The axis stays in the main symbol's
+  // prices, so averages, Fibonacci levels and marks stay as they are; the
+  // header shows the real price of the comparison and both changes in %.
+  const cmp = compareLine(d);
+  if (cmp) {
+    push("price", lineSeries(t("compare.series", { symbol: cmp.symbol }), g, cmp.data, p.text, {
+      lineStyle: { width: 1.8, color: p.text, type: [5, 3] }, z: 7,
+    }), { base: cmp.base, factor: cmp.factor });
+  }
 
   // Monthly EMA levels as a staircase. During a month the value of the last
   // completed month applies -- hence the line only jumps at the turn of the
@@ -939,6 +1120,8 @@ function buildDailyOption(data) {
         name: x.spec.name,
         data: x.spec.data,
         volume: Boolean(x.traits.volume),
+        base: x.traits.base,
+        factor: x.traits.factor,
         cls: colorClass(seriesColor(x.spec), p),
       })),
   }));
@@ -960,8 +1143,13 @@ function buildDailyOption(data) {
       textStyle: { color: p.text2, fontSize: 11 },
       inactiveColor: p.muted,
       // The monthly levels are ready but only visible after a click --
-      // otherwise there would be seven lines in one panel.
-      selected: { [t("series.m_ema8")]: false, [t("series.m_ema12")]: false },
+      // otherwise there would be seven lines in one panel. With a comparison
+      // the averages step back too: the two closes are what is compared, and
+      // four more lines would only cover them. A click in the legend brings
+      // each one back.
+      selected: Object.assign(
+        { [t("series.m_ema8")]: false, [t("series.m_ema12")]: false },
+        cmp ? { "SMA 50": false, "SMA 200": false, "EMA 50": false, "EMA 200": false } : {}),
       data: series
         .filter((s, k) => owner[k] === panel.key && s.name && s.name !== "​")
         .map((s) => s.name),
@@ -1200,7 +1388,9 @@ function updatePanelTooltips(index) {
       if (!row.hidden) {
         visible += 1;
         values.push(value);
-        row.lastChild.textContent = item.volume ? fmtVolume(value) : fmt(value);
+        row.lastChild.textContent = item.volume ? fmtVolume(value)
+          : item.base ? fmt(value / (item.factor || 1)) + "  " + pct((value / item.base - 1) * 100)
+          : fmt(value);
       }
     });
 
@@ -1793,11 +1983,753 @@ function updateStar(symbols) {
   star.dataset.saved = saved ? "1" : "0";
 }
 
+// --- Notices on the favorites ---------------------------------------------
+//
+// What the server delivers per favorite is a state, not a sentence: buy,
+// sell, overbought, sell_wait_buy or neutral. The wording lives here, so that
+// it follows the language.
+
+let heldSymbols = new Set();
+
+const NOTICE_LABEL = {
+  buy: "notice.state_buy",
+  sell: "notice.state_sell",
+  overbought: "notice.state_overbought",
+  sell_wait_buy: "notice.state_holding_low",
+};
+
+async function refreshNotices() {
+  let data, positions;
+  try {
+    [data, positions] = await Promise.all([
+      api("/api/signals"),
+      api("/api/positions"),
+    ]);
+  } catch (e) {
+    return;
+  }
+  heldSymbols = new Set(positions.items.map((i) => i.symbol));
+  const held = {};
+  positions.items.forEach((i) => { held[i.symbol] = i; });
+
+  // Only what suggests an action. "neutral" would be a list of every
+  // favorite -- that is what the card below already shows.
+  const shown = data.items.filter((i) => i.state !== "neutral");
+  const list = el("notice-list");
+  list.innerHTML = "";
+  el("notices-card").hidden = false;
+  el("notice-count").textContent = shown.length ? "(" + shown.length + ")" : "";
+  el("notice-hint").textContent = shown.length
+    ? t("notice.hint")
+    : t("notice.none");
+
+  shown.forEach((item) => {
+    const li = document.createElement("li");
+    li.className = "notice notice-" + item.state;
+
+    const head = document.createElement("div");
+    head.className = "notice-head";
+    const sym = document.createElement("span");
+    sym.className = "notice-sym";
+    sym.textContent = item.symbol;
+    const tag = document.createElement("span");
+    tag.className = "notice-tag";
+    tag.textContent = t(NOTICE_LABEL[item.state] || "notice.state_buy");
+    head.append(sym, tag);
+
+    const detail = document.createElement("div");
+    detail.className = "notice-detail";
+    let text = `RSI ${fmt(item.rsi, 1)} · ${fmt(item.price)} ${item.currency}`;
+    if (held[item.symbol]) {
+      const d = new Date(held[item.symbol].bought_at * 1000).toISOString().slice(0, 10);
+      text += " · " + t("notice.held_since", { date: d });
+    }
+    detail.textContent = text;
+
+    const action = document.createElement("button");
+    action.type = "button";
+    action.className = "ghost notice-action";
+    action.textContent = item.holding ? t("notice.mark_sold") : t("notice.mark_bought");
+    action.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      try {
+        if (item.holding) {
+          await api("/api/positions/" + encodeURIComponent(item.symbol), { method: "DELETE" });
+        } else {
+          const body = new FormData();
+          body.append("symbol", item.symbol);
+          body.append("price", String(item.price));
+          await api("/api/positions", { method: "POST", body: body });
+        }
+      } catch (error) {
+        showStatus(error.message, true);
+        return;
+      }
+      refreshNotices();
+    });
+
+    li.append(head, detail, action);
+    li.addEventListener("click", () => load(item.symbol));
+    list.appendChild(li);
+  });
+}
+
+
+// --- Portfolio Tracker -------------------------------------------------------
+// The posted trades of one trader, entered by hand or pasted as a whole
+// post. The bookkeeping (FIFO, estimated prices) lives in portfolio.py; this
+// part only shows it and collects new entries.
+
+let portfolioLoaded = false;
+let portfolioData = null;
+
+// Sorting of the open positions. Kept in localStorage as a convenience; the
+// default is the server's order, best result first.
+const PF_SORT_KEY = "pf-sort";
+let pfSort = { key: "unrealized", dir: -1 };
+try {
+  const saved = JSON.parse(localStorage.getItem(PF_SORT_KEY) || "null");
+  if (saved && typeof saved.key === "string" && (saved.dir === 1 || saved.dir === -1)) pfSort = saved;
+} catch (e) { /* storage blocked -- keep the default */ }
+
+const PF_SORT_VALUE = {
+  symbol: (p) => p.symbol,
+  shares: (p) => p.shares,
+  avg_cost: (p) => p.avg_cost,
+  last: (p) => p.last,
+  change_pct: (p) => p.change_pct,
+  invested: (p) => p.invested,
+  value: (p) => p.value,
+  unrealized: (p) => p.unrealized,
+  unrealized_pct: (p) => p.unrealized_pct,
+  weight: (p) => p.weight,
+  beta: (p) => (p.beta ? p.beta.value : undefined),
+  since: (p) => p.since,
+};
+
+function sortedPositions(positions) {
+  const value = PF_SORT_VALUE[pfSort.key] || PF_SORT_VALUE.unrealized;
+  return positions.slice().sort((a, b) => {
+    const x = value(a), y = value(b);
+    // Missing values (no price, no beta) always go to the end.
+    const xm = x === undefined || x === null, ym = y === undefined || y === null;
+    if (xm || ym) return xm - ym;
+    const order = typeof x === "string" ? x.localeCompare(y) : x - y;
+    return order * pfSort.dir || a.symbol.localeCompare(b.symbol);
+  });
+}
+
+function sortPositions(key) {
+  // Same column: turn round. New column: text A-Z, numbers largest first.
+  if (pfSort.key === key) {
+    pfSort = { key: key, dir: -pfSort.dir };
+  } else {
+    pfSort = { key: key, dir: key === "symbol" || key === "since" ? 1 : -1 };
+  }
+  try { localStorage.setItem(PF_SORT_KEY, JSON.stringify(pfSort)); } catch (e) { /* ignore */ }
+  if (portfolioData) renderPositions(portfolioData);
+}
+
+// Dollar amounts. His portfolio is in USD throughout; Intl takes care of
+// where the sign goes in either language.
+function usd(value, signed, digits) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "–";
+  return value.toLocaleString(LOCALE, {
+    style: "currency", currency: "USD",
+    minimumFractionDigits: digits || 0, maximumFractionDigits: digits || 0,
+    signDisplay: signed ? "exceptZero" : "auto",
+  });
+}
+
+function pct(value) {
+  if (value === null || value === undefined) return "–";
+  return (value > 0 ? "+" : "") + fmt(value, 1) + " %";
+}
+
+function shareCount(value) {
+  return Number.isInteger(value) ? String(value) : fmt(value, 2);
+}
+
+function tone(value) {
+  return value > 0 ? "up" : value < 0 ? "down" : "";
+}
+
+// One table from a header list and rows of [text, className] cells.
+// A header entry may carry a sort key as third element; with `sort` given
+// ({key, dir, onSort}) such a header becomes a button that sorts by it.
+function fillTable(table, headers, rows, onRow, sort) {
+  table.innerHTML = "";
+  const head = table.createTHead().insertRow();
+  headers.forEach(([label, cls, key]) => {
+    const cell = document.createElement("th");
+    if (cls) cell.className = cls;
+    if (sort && key) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "pf-sort";
+      const active = sort.key === key;
+      button.textContent = label + (active ? (sort.dir > 0 ? " ▲" : " ▼") : "");
+      cell.setAttribute("aria-sort", active ? (sort.dir > 0 ? "ascending" : "descending") : "none");
+      button.addEventListener("click", () => sort.onSort(key));
+      cell.appendChild(button);
+    } else {
+      cell.textContent = label;
+    }
+    head.appendChild(cell);
+  });
+  const body = table.createTBody();
+  rows.forEach((row) => {
+    const tr = body.insertRow();
+    if (row.className) tr.className = row.className;
+    row.cells.forEach(([content, cls, title]) => {
+      const td = tr.insertCell();
+      if (content instanceof Node) td.appendChild(content); else td.textContent = content;
+      if (cls) td.className = cls;
+      if (title) td.title = title;
+    });
+    if (onRow && row.symbol) tr.addEventListener("click", () => onRow(row.symbol));
+  });
+}
+
+function pfStatus(message, isError) {
+  const box = el("pf-status");
+  box.hidden = !message;
+  box.textContent = message || "";
+  box.style.borderLeftColor = isError ? palette().down : palette().sma50;
+}
+
+function openSymbol(symbol) {
+  load(symbol);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function refreshPortfolio() {
+  if (!portfolioLoaded) pfStatus(t("pf.loading"), false);
+  let data;
+  try {
+    data = await api("/api/portfolio");
+  } catch (error) {
+    pfStatus(error.message, true);
+    return;
+  }
+  portfolioLoaded = true;
+  portfolioData = data;
+  pfStatus(data.trades.length ? "" : t("pf.empty"), false);
+  renderPortfolio(data);
+}
+
+// The open positions on their own, so a click on a header redraws only them.
+function renderPositions(d) {
+  const s = d.totals;
+  el("pf-pos-count").textContent = d.positions.length ? "(" + d.positions.length + ")" : "";
+  const R = "num";
+  const posRows = sortedPositions(d.positions).map((p) => ({
+    symbol: p.symbol,
+    cells: [
+      [p.symbol],
+      [shareCount(p.shares), R],
+      [fmt(p.avg_cost), R],
+      [p.error ? "–" : fmt(p.last), R],
+      [p.change_pct === undefined ? "–" : pct(p.change_pct), R + " " + tone(p.change_pct)],
+      [usd(p.invested), R],
+      [p.value === undefined ? "–" : usd(p.value), R],
+      [p.unrealized === undefined ? "–" : usd(p.unrealized, true), R + " " + tone(p.unrealized)],
+      [p.unrealized_pct === undefined ? "–" : pct(p.unrealized_pct), R + " " + tone(p.unrealized_pct)],
+      [p.weight === undefined ? "–" : fmt(p.weight, 1) + " %", R],
+      [p.beta ? fmt(p.beta.value) : "–", R, betaTitle(p.beta)],
+      [p.since || ""],
+    ],
+  }));
+  if (d.positions.length) {
+    posRows.push({
+      className: "pf-total",
+      cells: [[t("pf.sum")], [""], [""], [""],
+              [usd(s.day, true), R + " " + tone(s.day)],
+              [usd(s.invested), R],
+              [usd(s.value), R],
+              [usd(s.unrealized, true), R + " " + tone(s.unrealized)],
+              [pct(s.unrealized_pct), R + " " + tone(s.unrealized_pct)], [""],
+              [s.beta === null ? "–" : fmt(s.beta), R, t("beta.title_depot")], [""]],
+    });
+  } else {
+    posRows.push({ cells: [[t("pf.none_open")]] });
+  }
+  fillTable(el("pf-positions"), [
+    [t("pf.col_symbol"), "", "symbol"], [t("pf.col_shares"), R, "shares"],
+    [t("pf.col_avg"), R, "avg_cost"], [t("pf.col_last"), R, "last"],
+    [t("pf.col_day"), R, "change_pct"], [t("pf.col_invested"), R, "invested"],
+    [t("pf.col_value"), R, "value"], [t("pf.col_result"), R, "unrealized"],
+    ["%", R, "unrealized_pct"], [t("pf.col_weight"), R, "weight"],
+    [t("pf.col_beta"), R, "beta"], [t("pf.col_since"), "", "since"],
+  ], posRows, openSymbol, Object.assign({ onSort: sortPositions }, pfSort));
+
+}
+
+function renderPortfolio(d) {
+  const s = d.totals;
+
+  // --- figures ---
+  const cards = el("pf-cards");
+  cards.innerHTML = "";
+  const card = (label, value, cls, note) => {
+    const box = document.createElement("div");
+    box.className = "kpi-card";
+    const l = document.createElement("div");
+    l.className = "kpi-card-label";
+    l.textContent = label;
+    const v = document.createElement("div");
+    v.className = "kpi-card-value" + (cls ? " " + cls : "");
+    v.textContent = value;
+    box.append(l, v);
+    if (note) {
+      const n = document.createElement("div");
+      n.className = "kpi-card-note";
+      n.textContent = note;
+      box.appendChild(n);
+    }
+    cards.appendChild(box);
+  };
+  const missing = s.missing ? " · " + t("pf.note_missing", { count: s.missing }) : "";
+  card(t("pf.card_invested"), usd(s.invested), "",
+       t("pf.note_value", { value: usd(s.value) }));
+  card(t("pf.card_unrealized"), usd(s.unrealized, true), tone(s.unrealized),
+       pct(s.unrealized_pct) + missing);
+  card(t("pf.card_day"), usd(s.day, true), tone(s.day),
+       t("pf.note_positions", { count: d.positions.length }));
+  card(t("pf.card_realized"), usd(s.realized, true), tone(s.realized),
+       t("pf.note_closed", { count: d.realized.length }));
+  card(t("pf.card_total"), usd(s.total, true), tone(s.total), "");
+  card(t("pf.card_ttwror"), s.ttwror === null || s.ttwror === undefined ? "–" : pct(s.ttwror),
+       tone(s.ttwror),
+       s.ttwror_pa === null || s.ttwror_pa === undefined ? "" : t("pf.note_ttwror", { pa: pct(s.ttwror_pa) }));
+  card(t("pf.card_irr"), s.irr === null || s.irr === undefined ? "–" : pct(s.irr), tone(s.irr),
+       s.irr === null || s.irr === undefined ? "" : t("pf.note_irr", {
+         since: s.irr_since, days: s.irr_days, period: pct(s.irr_period) }));
+
+  // --- what the bookkeeping stumbled over ---
+  const warnings = el("pf-warnings");
+  warnings.innerHTML = "";
+  d.warnings.forEach((w) => {
+    const li = document.createElement("li");
+    li.textContent = t(w.key, {
+      symbol: w.symbol, date: w.date,
+      wanted: w.wanted === undefined ? "" : shareCount(w.wanted),
+      owned: w.owned === undefined ? "" : shareCount(w.owned),
+    });
+    warnings.appendChild(li);
+  });
+
+  renderPositions(d);
+  const R = "num";
+
+  // --- closed trades, newest first ---
+  el("pf-real-count").textContent = d.realized.length ? "(" + d.realized.length + ")" : "";
+  const realRows = d.realized.slice().reverse().map((r) => ({
+    symbol: r.symbol,
+    cells: [
+      [r.date], [r.symbol], [shareCount(r.shares), R], [fmt(r.avg_cost), R],
+      [fmt(r.price) + (r.estimated ? " (" + t("pf.estimated") + ")" : ""),
+       R + (r.estimated ? " pf-est" : "")],
+      [usd(r.shares * r.avg_cost), R],
+      [usd(r.shares * r.price), R + (r.estimated ? " pf-est" : "")],
+      [usd(r.profit, true), R + " " + tone(r.profit)],
+      [pct(r.profit_pct), R + " " + tone(r.profit)],
+    ],
+  }));
+  if (d.realized.length) {
+    // Built like the total of the open positions. The percentage is on the
+    // capital the sold shares had cost, not a mean of the per-trade figures --
+    // a small loser must not weigh like a big one.
+    const cost = d.realized.reduce((sum, r) => sum + r.shares * r.avg_cost, 0);
+    const proceeds = d.realized.reduce((sum, r) => sum + r.shares * r.price, 0);
+    const profit = proceeds - cost;
+    const estimated = d.realized.filter((r) => r.estimated).length;
+    const note = estimated ? t("pf.closed_estimated", { count: estimated }) : "";
+    realRows.push({
+      className: "pf-total",
+      cells: [[t("pf.sum")], [""], [""], [""], [""],
+              [usd(cost), R],
+              [usd(proceeds), R, note],
+              [usd(profit, true), R + " " + tone(profit), note],
+              [pct(cost ? profit / cost * 100 : null), R + " " + tone(profit)]],
+    });
+  } else {
+    realRows.push({ cells: [[t("pf.none_closed")]] });
+  }
+  fillTable(el("pf-realized"), [
+    [t("pf.col_date")], [t("pf.col_symbol")], [t("pf.col_shares"), R],
+    [t("pf.col_avg"), R], [t("pf.col_sell"), R], [t("pf.col_invested"), R],
+    [t("pf.col_proceeds"), R], [t("pf.col_result"), R], ["%", R],
+  ], realRows, openSymbol);
+
+  // --- the journal itself, with the way out for a wrong entry ---
+  el("pf-journal-count").textContent = "(" + d.trades.length + ")";
+  const journal = d.trades.slice().sort((a, b) =>
+    (b.trade_date + String(b.id).padStart(9, "0")).localeCompare(
+      a.trade_date + String(a.id).padStart(9, "0")));
+  fillTable(el("pf-journal"), [
+    [t("pf.col_date")], [t("pf.col_side")], [t("pf.col_symbol")],
+    [t("pf.col_shares"), R], [t("pf.col_price"), R], [t("pf.col_note")], [""],
+  ], journal.map((tr) => {
+    // Only admins may delete; for the others the column stays empty.
+    const remove = PERMS.portfolioEdit ? document.createElement("button") : "";
+    if (remove) {
+      remove.type = "button";
+      remove.className = "ghost pf-del";
+      remove.textContent = "×";
+      remove.title = t("pf.delete");
+      remove.setAttribute("aria-label", t("pf.delete"));
+      remove.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        const side = t(tr.side === "buy" ? "pf.buy" : "pf.sell");
+        if (!window.confirm(t("pf.confirm_delete",
+                              { side: side, symbol: tr.symbol, date: tr.trade_date }))) return;
+        try {
+          await api("/api/portfolio/trades/" + tr.id, { method: "DELETE" });
+        } catch (error) {
+          pfStatus(error.message, true);
+          return;
+        }
+        portfolioChanged();
+      });
+    }
+    const shares = tr.shares === null
+      ? t("pf.all") + (tr.shares_used ? " (" + shareCount(tr.shares_used) + ")" : "")
+      : shareCount(tr.shares);
+    return {
+      symbol: tr.symbol,
+      cells: [
+        [tr.trade_date],
+        [t(tr.side === "buy" ? "pf.buy" : "pf.sell"), "pf-side-" + tr.side],
+        [tr.symbol], [shares, R],
+        [tr.price_used === null ? "–"
+          : fmt(tr.price_used) + (tr.estimated ? " (" + t("pf.estimated") + ")" : ""),
+         R + (tr.estimated ? " pf-est" : "")],
+        [tr.note || ""], [remove],
+      ],
+    };
+  }), openSymbol);
+}
+
+// --- entering trades ---
+
+function draftRow(trade) {
+  const body = el("pf-draft").tBodies[0] || el("pf-draft").createTBody();
+  if (!el("pf-draft").tHead) {
+    const head = el("pf-draft").createTHead().insertRow();
+    [t("pf.col_date"), t("pf.col_side"), t("pf.col_symbol"), t("pf.col_shares"),
+     t("pf.col_price"), t("pf.col_note"), ""].forEach((h) => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      head.appendChild(th);
+    });
+  }
+  const tr = body.insertRow();
+  const input = (name, value, type, cls) => {
+    const field = document.createElement("input");
+    field.type = type;
+    field.name = name;
+    if (cls) field.className = cls;
+    if (type === "number") { field.step = "any"; field.min = "0"; field.inputMode = "decimal"; }
+    field.value = value === null || value === undefined ? "" : value;
+    tr.insertCell().appendChild(field);
+    return field;
+  };
+  const date = input("date", trade.date || el("pf-date").value || todayISO(), "date");
+  date.max = todayISO();
+  const side = document.createElement("select");
+  side.name = "side";
+  [["buy", t("pf.buy")], ["sell", t("pf.sell")]].forEach(([value, label]) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    side.appendChild(option);
+  });
+  side.value = trade.side || "buy";
+  tr.insertCell().appendChild(side);
+  input("symbol", trade.symbol, "text", "pf-in-sym").autocomplete = "off";
+  const shares = input("shares", trade.shares, "number", "pf-in-num");
+  // An empty count on a sell means "the whole position" -- say so.
+  shares.placeholder = t("pf.all");
+  input("price", trade.price, "number", "pf-in-num").placeholder = t("pf.estimated");
+  input("note", trade.note, "text");
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "ghost pf-del";
+  remove.textContent = "×";
+  remove.title = t("pf.remove_row");
+  remove.setAttribute("aria-label", t("pf.remove_row"));
+  remove.addEventListener("click", () => {
+    tr.remove();
+    el("pf-save").hidden = !body.rows.length;
+  });
+  tr.insertCell().appendChild(remove);
+  el("pf-save").hidden = false;
+}
+
+function clearDraft() {
+  el("pf-draft").innerHTML = "";
+  el("pf-save").hidden = true;
+  el("pf-unparsed").hidden = true;
+}
+
+async function parsePost() {
+  const text = el("pf-text").value.trim();
+  if (!text) return;
+  let result;
+  try {
+    result = await api("/api/portfolio/parse", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text }),
+    });
+  } catch (error) {
+    pfStatus(error.message, true);
+    return;
+  }
+  result.trades.forEach((trade) => draftRow(trade));
+  const hint = el("pf-unparsed");
+  const lines = result.unparsed.map((l) => "„" + l + "“");
+  if (!result.trades.length && !lines.length) lines.push(t("pf.parsed_none"));
+  hint.hidden = !lines.length;
+  hint.textContent = result.unparsed.length
+    ? t("pf.unparsed", { lines: lines.join(" · ") })
+    : lines.join(" ");
+}
+
+async function saveDraft() {
+  const body = el("pf-draft").tBodies[0];
+  if (!body || !body.rows.length) return;
+  const trades = Array.from(body.rows).map((tr) => {
+    const value = (name) => tr.querySelector(`[name="${name}"]`).value.trim();
+    return {
+      date: value("date"), side: value("side"), symbol: value("symbol"),
+      shares: value("shares"), price: value("price"), note: value("note"),
+    };
+  });
+  let result;
+  try {
+    result = await api("/api/portfolio/trades", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trades: trades }),
+    });
+  } catch (error) {
+    pfStatus(error.message, true);
+    return;
+  }
+  clearDraft();
+  el("pf-text").value = "";
+  pfStatus(t("pf.saved", { count: result.count }), false);
+  portfolioChanged();
+}
+
+// After a change both the tab and the marks in the chart are out of date.
+async function portfolioChanged() {
+  await refreshPortfolio();
+  if (state.symbol) {
+    state.pf = await fetchMarks(state.symbol);
+    if (state.tab === "daily") draw();
+  }
+}
+
+function fetchMarks(symbol) {
+  if (!PERMS.portfolio) return Promise.resolve(null);
+  return api("/api/portfolio/symbol/" + encodeURIComponent(symbol)).catch(() => null);
+}
+
+function setupPortfolio() {
+  // Only admins get the entry form (index.html).
+  if (!el("pf-form")) return;
+  el("pf-date").value = todayISO();
+  el("pf-date").max = todayISO();
+  el("pf-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    parsePost();
+  });
+  el("pf-add-row").addEventListener("click", () => draftRow({}));
+  el("pf-save").addEventListener("click", saveDraft);
+}
+
+// Buys and sells as pins on the price, plus the average cost of what is still
+// held. Dates are snapped to the next trading day in the window: a post on a
+// Saturday belongs to Monday's bar.
+function portfolioMarks(d, p) {
+  const pf = state.pf;
+  const points = [], lines = [];
+  if (!pf || !pf.trades || !d.dates.length) return { points, lines };
+  const last = d.dates[d.dates.length - 1];
+  pf.trades.forEach((tr) => {
+    if (tr.price_used === null || tr.trade_date < d.dates[0] || tr.trade_date > last) return;
+    const date = d.dates.find((day) => day >= tr.trade_date);
+    const buy = tr.side === "buy";
+    points.push({
+      name: "Portfolio", coord: [date, tr.price_used], value: tr.price_used,
+      symbol: "pin", symbolSize: 26, symbolRotate: buy ? 180 : 0,
+      symbolOffset: [0, buy ? 13 : -13],
+      itemStyle: { color: buy ? p.up : p.down, borderColor: p.text2, borderWidth: 0.5 },
+      label: { show: true, formatter: t(buy ? "pf.mark_buy" : "pf.mark_sell"),
+               color: "#fff", fontSize: 10, fontWeight: 600,
+               offset: [0, buy ? 3 : -3] },
+    });
+  });
+  if (pf.position) {
+    lines.push({
+      yAxis: pf.position.avg_cost,
+      lineStyle: { color: p.up, type: [6, 4], width: 1.4, opacity: 0.9 },
+      label: { formatter: t("pf.avg_line", { price: fmt(pf.position.avg_cost) }),
+               position: "insideEndBottom", color: p.up, fontSize: 10 },
+    });
+  }
+  return { points, lines };
+}
+
 // --- Loading and drawing --------------------------------------------------
+
+// --- Comparison ---------------------------------------------------------
+
+// The query of the chart window, for the chart itself and for the comparison.
+function windowQuery(symbol) {
+  const query = new URLSearchParams({ symbol: symbol });
+  if (state.start || state.end) {
+    if (state.start) query.set("start", state.start);
+    if (state.end) query.set("end", state.end);
+  } else {
+    query.set("range", state.range);
+  }
+  return query;
+}
+
+// --- Free cash flow ------------------------------------------------------
+
+// 8.4e9 -> "8,4 Mrd. $" / "$8.4B", in the currency the company reports in.
+function compactMoney(value, currency) {
+  const options = { notation: "compact", maximumFractionDigits: 1 };
+  try {
+    return value.toLocaleString(LOCALE, Object.assign({ style: "currency", currency: currency }, options));
+  } catch (e) {
+    // Unknown or missing currency code.
+    return value.toLocaleString(LOCALE, options) + (currency ? " " + currency : "");
+  }
+}
+
+async function loadFundamentals(symbol) {
+  const box = el("q-fcf");
+  box.hidden = true;
+  let data;
+  try {
+    data = await api("/api/fundamentals?symbol=" + encodeURIComponent(symbol));
+  } catch (e) {
+    return;
+  }
+  // The answer may come after the next symbol has been picked.
+  const f = data.fcf;
+  if (!f || symbol !== state.symbol) return;
+  const cur = f.currency;
+  box.textContent = t("fcf.label", { value: compactMoney(f.ttm, cur) });
+  box.classList.toggle("down", f.ttm < 0);
+  const lines = [t("fcf.title", { date: f.date })];
+  if (f.operating !== null && f.capex !== null) {
+    lines.push(t("fcf.title_parts", {
+      operating: compactMoney(f.operating, cur), capex: compactMoney(Math.abs(f.capex), cur) }));
+  }
+  if (f.previous) {
+    lines.push(t("fcf.title_change", { previous: compactMoney(f.previous, cur),
+      change: pct((f.ttm - f.previous) / Math.abs(f.previous) * 100) }));
+  }
+  if (f.annual.length) {
+    lines.push(t("fcf.title_years", { years: f.annual.map((a) =>
+      a.date.slice(0, 4) + " " + compactMoney(a.value, cur)).join(" · ") }));
+  }
+  lines.push(t("fcf.title_source"));
+  box.title = lines.join("\n");
+  box.hidden = false;
+}
+
+function fetchCompare(symbol) {
+  return api("/api/closes?" + windowQuery(symbol).toString());
+}
+
+// The comparison closes aligned on the main chart's days, rescaled onto the
+// main close at the first day both have. null without a comparison.
+function compareLine(d) {
+  const c = state.cmp;
+  if (!c || !c.dates || c.symbol === state.symbol) return null;
+  const byDate = {};
+  c.dates.forEach((day, i) => { byDate[day] = c.close[i]; });
+  const anchor = d.dates.findIndex((day, i) =>
+    d.close[i] !== null && byDate[day] !== null && byDate[day] !== undefined);
+  if (anchor < 0) return null;
+  const factor = d.close[anchor] / byDate[d.dates[anchor]];
+  const data = d.dates.map((day) => {
+    const v = byDate[day];
+    return v === null || v === undefined ? null : v * factor;
+  });
+  return { symbol: c.symbol, data: data, factor: factor, base: d.close[anchor], anchor: anchor };
+}
+
+// With a comparison the main close shows its change in % as well.
+function cmpBase(d) {
+  const cmp = compareLine(d);
+  return cmp ? { base: cmp.base } : {};
+}
+
+function renderCompareChip() {
+  const on = Boolean(state.compare);
+  el("cmp-chip").hidden = !on;
+  el("cmp-form").hidden = on;
+  if (on) el("cmp-label").textContent = t("compare.label", { symbol: state.compare });
+}
+
+function rememberCompare() {
+  const url = new URL(window.location.href);
+  if (state.compare) url.searchParams.set("compare", state.compare);
+  else url.searchParams.delete("compare");
+  window.history.replaceState({}, "", url);
+}
+
+async function setCompare(symbol) {
+  symbol = (symbol || "").trim().toUpperCase().replace(/^\$/, "");
+  if (!symbol) return;
+  if (symbol === state.symbol) { showStatus(t("compare.same"), true); return; }
+  let data;
+  try {
+    data = await fetchCompare(symbol);
+  } catch (error) {
+    showStatus(symbol + ": " + error.message, true);
+    return;
+  }
+  showStatus("", false);
+  state.compare = symbol;
+  state.cmp = data;
+  el("cmp-symbol").value = "";
+  renderCompareChip();
+  rememberCompare();
+  if (state.tab !== "daily") selectTab("daily"); else draw();
+}
+
+function clearCompare() {
+  state.compare = null;
+  state.cmp = null;
+  renderCompareChip();
+  rememberCompare();
+  draw();
+}
+
+function setupCompare() {
+  el("cmp-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    setCompare(el("cmp-symbol").value);
+  });
+  el("cmp-clear").addEventListener("click", clearCompare);
+}
 
 async function load(symbol, range) {
   symbol = (symbol || state.symbol).trim().toUpperCase();
   if (!symbol) return;
+  // The depot tab shows no chart. Whoever picks an instrument from there --
+  // favorites bar, search, a row of the depot -- wants to see it.
+  if (state.tab === "portfolio") selectTab("daily");
   state.symbol = symbol;
   if (range) {
     // Clicking a preset cancels the freely chosen period.
@@ -1808,14 +2740,14 @@ async function load(symbol, range) {
   el("symbol").value = symbol;
   showStatus(t("status.loading", { symbol: symbol }), false);
 
-  const query = new URLSearchParams({ symbol: symbol });
-  if (state.start || state.end) {
-    if (state.start) query.set("start", state.start);
-    if (state.end) query.set("end", state.end);
-  } else {
-    query.set("range", state.range);
-  }
+  const query = windowQuery(symbol);
 
+  const marks = fetchMarks(symbol);
+  loadFundamentals(symbol);
+  // The comparison follows the window; comparing a symbol with itself is
+  // pointless, so it is left out (and kept for the next symbol).
+  const compare = state.compare && state.compare !== symbol
+    ? fetchCompare(state.compare).catch(() => null) : Promise.resolve(null);
   let data;
   try {
     data = await api("/api/chart?" + query.toString());
@@ -1825,6 +2757,8 @@ async function load(symbol, range) {
   }
 
   state.data = data;
+  state.pf = await marks;
+  state.cmp = await compare;
   showStatus("", false);
   renderQuote(data);
   // If the window ends before the last trading day, it is a look back.
@@ -1854,6 +2788,8 @@ async function load(symbol, range) {
 
   const url = new URL(window.location.href);
   url.searchParams.set("symbol", symbol);
+  if (state.compare) url.searchParams.set("compare", state.compare);
+  else url.searchParams.delete("compare");
   url.searchParams.delete("range");
   url.searchParams.delete("start");
   url.searchParams.delete("end");
@@ -1864,6 +2800,14 @@ async function load(symbol, range) {
     url.searchParams.set("range", state.range);
   }
   window.history.replaceState({}, "", url);
+}
+
+// What a beta figure rests on -- shown on hover, since a weekly beta of a
+// young listing is less solid than Yahoo's five years of months.
+function betaTitle(b) {
+  if (!b) return t("beta.title_none");
+  const short = b.basis !== "1mo" || b.periods < 36;
+  return t("beta.title_" + b.basis, { count: b.periods }) + (short ? t("beta.title_short") : "");
 }
 
 function renderQuote(data) {
@@ -1879,6 +2823,13 @@ function renderQuote(data) {
     const sign = data.change_pct >= 0 ? "+" : "";
     change.textContent = sign + fmt(data.change_pct) + " %";
     change.className = "change " + (data.change_pct >= 0 ? "up" : "down");
+  }
+
+  const beta = el("q-beta");
+  beta.hidden = !data.beta;
+  if (data.beta) {
+    beta.textContent = t("quote.beta", { value: fmt(data.beta.value) });
+    beta.title = betaTitle(data.beta);
   }
 
   // Where the data came from. Makes it visible that a repeat call gets by
@@ -2007,7 +2958,7 @@ function draw() {
     monthly.resize();
     monthly.setOption(buildMonthlyOption(state.data), true);
     spreadEndLabels(monthly);
-  } else if (monthly) {
+  } else if (state.tab === "monthly" && monthly) {
     // No monthly block for the new symbol. Without this clearing, the candles
     // of the previous symbol stayed under the new heading.
     monthly.clear();
@@ -2197,10 +3148,37 @@ function closePanelConfig() {
   el("toggle-panels").classList.remove("active");
 }
 
+function selectTab(tab) {
+  el("tabs").querySelectorAll("button").forEach((b) =>
+    b.classList.toggle("active", b.dataset.tab === tab));
+  state.tab = tab;
+  // The panel selection concerns the daily chart only.
+  el("toggle-panels").hidden = state.tab !== "daily";
+  if (state.tab !== "daily") closePanelConfig();
+
+  // Hide the whole wrapper, not just the chart inside it: the tooltip boxes
+  // lie above it as absolutely positioned elements and would otherwise stay
+  // put on the weekly and monthly chart -- the wrapper does collapse to
+  // height 0, but its children do not disappear with it.
+  el("chart-daily-wrap").hidden = state.tab !== "daily";
+  if (state.tab !== "daily") hidePanelTooltips();
+  el("chart-weekly").hidden = state.tab !== "weekly";
+  el("chart-monthly").hidden = state.tab !== "monthly";
+  el("portfolio").hidden = state.tab !== "portfolio";
+  // The depot is not about the chosen symbol: the sidebar (notices,
+  // favorites, monthly status, signals) gives its width to the tables.
+  document.querySelector(".layout").classList.toggle("wide", state.tab === "portfolio");
+  draw();
+  // The depot is fetched on every visit: the prices move.
+  if (state.tab === "portfolio") refreshPortfolio();
+}
+
 async function init() {
   setupSearch();
   setupTheme();
   setupTooltipDismiss();
+  setupPortfolio();
+  setupCompare();
 
   el("star").addEventListener("click", async () => {
     if (!state.symbol) return;
@@ -2287,23 +3265,7 @@ async function init() {
 
   el("tabs").addEventListener("click", (event) => {
     const button = event.target.closest("button[data-tab]");
-    if (!button) return;
-    el("tabs").querySelectorAll("button").forEach((b) => b.classList.remove("active"));
-    button.classList.add("active");
-    state.tab = button.dataset.tab;
-    // The panel selection concerns the daily chart only.
-    el("toggle-panels").hidden = state.tab !== "daily";
-    if (state.tab !== "daily") closePanelConfig();
-
-    // Hide the whole wrapper, not just the chart inside it: the tooltip boxes
-    // lie above it as absolutely positioned elements and would otherwise stay
-    // put on the weekly and monthly chart -- the wrapper does collapse to
-    // height 0, but its children do not disappear with it.
-    el("chart-daily-wrap").hidden = state.tab !== "daily";
-    if (state.tab !== "daily") hidePanelTooltips();
-    el("chart-weekly").hidden = state.tab !== "weekly";
-    el("chart-monthly").hidden = state.tab !== "monthly";
-    draw();
+    if (button) selectTab(button.dataset.tab);
   });
 
   // When the device is turned, not only the size changes but the layout
@@ -2342,9 +3304,16 @@ async function init() {
     el("ranges").querySelectorAll("button").forEach((b) => b.classList.remove("active"));
   }
 
+  // A shared link with a comparison restores it; load() fetches its closes.
+  if (params.get("compare")) {
+    state.compare = params.get("compare").trim().toUpperCase().slice(0, 20);
+    renderCompareChip();
+  }
+
   // Fetch settings and favorites first, then decide what is shown.
   await loadPanelSettings();
   await refreshWatchlist();
+  refreshNotices();
 
   // If a symbol stands in the address, that applies -- so a shared or
   // reloaded link keeps its instrument. Otherwise one is drawn at random.
