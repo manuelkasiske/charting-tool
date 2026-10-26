@@ -1020,27 +1020,28 @@ def unauthorized(request: Request, exc: HTTPException):
     return RedirectResponse("/login", status_code=303)
 
 
-WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
-
-
 def _assert_writes_guarded() -> None:
     """Refuses to start if a changing /api/ route skips require_write().
 
     The X-Requested-With check only protects the routes that ask for it. A
     write endpoint declared with plain require_user or require() falls back to
-    SameSite alone without anybody noticing -- seven of them did until
-    2026-10-26. Checked once at import, after every route is registered, so
-    such a route cannot reach production.
+    SameSite alone without anybody noticing. Checked once at import, after
+    every route is registered, so such a route cannot reach production.
+
+    Routes outside /api/ are left out on purpose: /login has its own
+    double-submit CSRF check, and a forged /logout only signs the user out.
     """
+    write_methods = {"POST", "PUT", "PATCH", "DELETE"}
+
     def guarded(dependant) -> bool:
         return any(getattr(dep.call, "requires_write", False) or guarded(dep)
                    for dep in dependant.dependencies)
 
     unguarded = [
-        f"{'/'.join(sorted(route.methods & WRITE_METHODS))} {route.path}"
+        f"{'/'.join(sorted(route.methods & write_methods))} {route.path}"
         for route in app.routes
         if isinstance(route, APIRoute) and route.path.startswith("/api/")
-        and route.methods & WRITE_METHODS and not guarded(route.dependant)
+        and route.methods & write_methods and not guarded(route.dependant)
     ]
     if unguarded:
         raise SystemExit(
