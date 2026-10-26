@@ -21,6 +21,7 @@ from urllib.parse import urlsplit
 
 from fastapi import Body, Depends, FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -215,6 +216,8 @@ def require_write(permission: str):
                 detail=i18n.translate(i18n.from_request(request), "error.forbidden"),
             )
         return user
+    # Lets _assert_writes_guarded() recognise the check on a route.
+    check.requires_write = True
     return check
 
 
@@ -561,7 +564,7 @@ def api_settings_get(request: Request, user=Depends(require_user)):
 def api_settings_panels(
     request: Request,
     panels: list = Body(..., embed=True),
-    user=Depends(require_user),
+    user=Depends(require_write("app")),
 ):
     t = i18n.translator(i18n.from_request(request))
     cleaned = _normalize_panels(panels, t)
@@ -575,7 +578,7 @@ def api_settings_panels(
 
 
 @app.delete("/api/settings/panels")
-def api_settings_panels_reset(user=Depends(require_user)):
+def api_settings_panels_reset(user=Depends(require_write("app"))):
     with db.cursor() as conn:
         conn.execute(
             "DELETE FROM settings WHERE user_id = ? AND key = 'panels'",
@@ -600,7 +603,7 @@ def api_watchlist_add(
     request: Request,
     symbol: str = Form(...),
     label: str = Form(""),
-    user=Depends(require_user),
+    user=Depends(require_write("app")),
 ):
     t = i18n.translator(i18n.from_request(request))
     symbol = symbol.strip().upper()
@@ -658,7 +661,7 @@ def api_watchlist_quotes(user=Depends(require_user)):
 
 
 @app.delete("/api/watchlist/{symbol}")
-def api_watchlist_del(symbol: str, user=Depends(require_user)):
+def api_watchlist_del(symbol: str, user=Depends(require_write("app"))):
     with db.cursor() as conn:
         conn.execute(
             "DELETE FROM watchlist WHERE user_id = ? AND symbol = ?",
@@ -718,7 +721,7 @@ def api_positions_add(
     symbol: str = Form(...),
     price: float | None = Form(None),
     stake: float | None = Form(None),
-    user=Depends(require_user),
+    user=Depends(require_write("app")),
 ):
     """Mark an instrument as held, so that it gets sell notices instead of buy ones."""
     t = i18n.translator(i18n.from_request(request))
@@ -736,7 +739,7 @@ def api_positions_add(
 
 
 @app.delete("/api/positions/{symbol}")
-def api_positions_del(symbol: str, user=Depends(require_user)):
+def api_positions_del(symbol: str, user=Depends(require_write("app"))):
     with db.cursor() as conn:
         conn.execute(
             "DELETE FROM positions WHERE user_id = ? AND symbol = ?",
@@ -844,7 +847,7 @@ def api_pf_add(
 
 @app.post("/api/portfolio/parse")
 def api_pf_parse(text: str = Body(..., embed=True, max_length=20_000),
-                 user=Depends(require("portfolio_edit"))):
+                 user=Depends(require_write("portfolio_edit"))):
     """Reads the trades out of a pasted post -- a proposal, nothing is saved."""
     return portfolio.parse_post(text)
 
@@ -1015,3 +1018,35 @@ def unauthorized(request: Request, exc: HTTPException):
             status_code=401,
         )
     return RedirectResponse("/login", status_code=303)
+
+
+WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+def _assert_writes_guarded() -> None:
+    """Refuses to start if a changing /api/ route skips require_write().
+
+    The X-Requested-With check only protects the routes that ask for it. A
+    write endpoint declared with plain require_user or require() falls back to
+    SameSite alone without anybody noticing -- seven of them did until
+    2026-10-26. Checked once at import, after every route is registered, so
+    such a route cannot reach production.
+    """
+    def guarded(dependant) -> bool:
+        return any(getattr(dep.call, "requires_write", False) or guarded(dep)
+                   for dep in dependant.dependencies)
+
+    unguarded = [
+        f"{'/'.join(sorted(route.methods & WRITE_METHODS))} {route.path}"
+        for route in app.routes
+        if isinstance(route, APIRoute) and route.path.startswith("/api/")
+        and route.methods & WRITE_METHODS and not guarded(route.dependant)
+    ]
+    if unguarded:
+        raise SystemExit(
+            "Changing API routes without require_write(): " + ", ".join(unguarded)
+            + '\n  Declare them with user=Depends(require_write("<permission>")).'
+        )
+
+
+_assert_writes_guarded()
